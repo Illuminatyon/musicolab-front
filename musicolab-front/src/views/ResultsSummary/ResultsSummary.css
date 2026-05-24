@@ -1,0 +1,41 @@
+/* ResultsSummary.css — Charte IUT Montreuil */
+
+.results { display: flex; flex-direction: column; gap: 2rem; padding: 2.5rem; background: #141414; border: 1px solid #2a2a2a; border-radius: 1rem; width: 100%; max-width: 480px; }
+
+.results__header { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; }
+.results__titre { font-size: 1rem; font-weight: 700; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.12em; font-family: 'Courier New', monospace; }
+
+.results__score { display: flex; align-items: baseline; gap: 0.25rem; }
+.score__valeur { font-size: 5rem; font-weight: 900; font-family: 'Courier New', monospace; line-height: 1; }
+.score__unite  { font-size: 2rem; font-weight: 700; font-family: 'Courier New', monospace; }
+.score--excellent { color: #22c55e; }
+.score--bien      { color: #84cc16; }
+.score--passable  { color: #f59e0b; }
+.score--faible    { color: #C8102E; }
+
+.results__appreciation { font-size: 1rem; color: #fff; font-weight: 600; }
+.results__compteur { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
+
+.results__liste { display: flex; flex-direction: column; gap: 0.75rem; }
+.results__liste-titre { font-size: 0.8rem; font-weight: 700; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Courier New', monospace; }
+
+.resultat { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 0.5rem; }
+.resultat__note { display: flex; align-items: baseline; gap: 0.5rem; flex: 1; }
+.resultat__index { font-size: 0.75rem; color: #a0a0a0; font-family: 'Courier New', monospace; min-width: 16px; }
+.resultat__nom { font-size: 1.2rem; font-weight: 800; color: #fff; font-family: 'Courier New', monospace; }
+.resultat__nom sub { font-size: 0.7rem; color: #C8102E; }
+.resultat__hz { font-size: 0.75rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
+.resultat__ecart { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; min-width: 44px; text-align: right; }
+
+.resultat__badge { font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 9999px; font-family: 'Courier New', monospace; white-space: nowrap; }
+.badge--juste   { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3);  }
+.badge--erreur  { background: rgba(200,16,46,0.15);  color: #C8102E; border: 1px solid rgba(200,16,46,0.3);  }
+.badge--silence { background: rgba(160,160,160,0.1); color: #a0a0a0; border: 1px solid rgba(160,160,160,0.2); }
+
+.results__btn { width: 100%; padding: 0.875rem; background: #C8102E; color: #fff; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: none; border-radius: 0.5rem; cursor: pointer; font-family: 'Courier New', monospace; transition: background 0.2s ease; }
+.results__btn:hover { background: #e8213f; }
+
+@media (max-width: 480px) {
+    .results { padding: 1.5rem; }
+    .score__valeur { font-size: 4rem; }
+}

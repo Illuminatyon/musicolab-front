@@ -1,12 +1,7 @@
 /**
- * PitchDetector.tsx
- * ─────────────────────────────────────────────────────────────────────────────
- * View — Composant principal du Module 3 (Smart Component).
- *
- * Nouveautés :
- *  - Sélection des notes avant la session (toggle par note)
- *  - Transmission de onSkip et progressionStabilisation à NoteTarget
- * ─────────────────────────────────────────────────────────────────────────────
+ * PitchDetector.tsx — couche View, Smart Component (MVC)
+ * Orchestre les hooks Controllers et distribue les données aux composants enfants.
+ * Notions du cours : Composants/Props (S2), useState (S3), useEffect (S4), Custom Hooks (S5)
  */
 
 import { useState, useEffect } from "react";
@@ -14,227 +9,149 @@ import "./PitchDetector.css";
 
 import { usePitchDetection } from "../../controllers/usePitchDetection";
 import { useNoteSession } from "../../controllers/useNoteSession";
-import type { Note } from "../../models/noteModel";
+import { getNotesOctave, type Note } from "../../models/noteModel";
+import { jouerNote } from "../../models/pitchModel";
 
-import NoteTarget from '../NoteTarget/noteTarget';
-import ResultsSummary from '../ResultSummary/resultSummary';
+import NoteTarget from "../NoteTarget/NoteTarget";
+import ResultsSummary from "../ResultsSummary/ResultsSummary";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
-const OPTIONS_NOMBRE_NOTES = [3, 5, 7, 10] as const;
-
-// ─── Composant ───────────────────────────────────────────────────────────────
+const OPTIONS_NOTES = [3, 5, 7, 10] as const;
+const OPTIONS_OCTAVE = [2, 3, 4, 5] as const;
 
 export default function PitchDetector() {
 
-    // ── Controllers ───────────────────────────────────────────────────────────
-
     const {
-        frequenceHz,
-        statut: statutCapture,
-        erreur: erreurCapture,
-        demarrer: demarrerCapture,
-        arreter: arreterCapture,
+        frequenceHz, statut, erreur,
+        demarrer: demarrerCapture, arreter: arreterCapture,
     } = usePitchDetection();
 
     const {
-        phase,
-        noteCourante,
-        indexNote,
-        totalNotes,
-        evaluationTempsReel,
-        ecartCentsTempsReel,
-        progressionStabilisation,
-        bilan,
-        notesDisponibles,
-        demarrerSession,
-        skipNote,
-        reinitialiser,
-        mettreAJourFrequence,
+        phase, noteCourante, indexNote, totalNotes,
+        evaluationTempsReel, ecartCentsTempsReel,
+        progressionStabilisation, noteValidee, bilan,
+        demarrerSession, skipNote, reinitialiser, mettreAJourFrequence,
     } = useNoteSession();
 
-    // ── État local de configuration ───────────────────────────────────────────
+    const [nombreNotes, setNombreNotes] = useState(5);
+    const [octave, setOctave] = useState(4);
+    const notesOctave = getNotesOctave(octave);
+    const [selection, setSelection] = useState<Note[]>(notesOctave);
 
-    const [nombreNotesChoisi, setNombreNotesChoisi] = useState<number>(5);
+    // Réinitialiser la sélection quand l'octave change
+    useEffect(() => { setSelection(getNotesOctave(octave)); }, [octave]);
 
-    /**
-     * Notes sélectionnées par l'utilisateur pour la session.
-     * Par défaut : toutes les notes disponibles sont sélectionnées.
-     */
-    const [notesSelectionnees, setNotesSelectionnees] = useState<Note[]>(
-        () => notesDisponibles
-    );
-
-    // ── Synchronisation pitch → session (useEffect — cours S4) ───────────────
-
+    // Brancher la détection sur la session
     useEffect(() => {
-        if (phase === "en_cours") {
-            mettreAJourFrequence(frequenceHz);
-        }
+        if (phase === "en_cours") mettreAJourFrequence(frequenceHz);
     }, [frequenceHz, phase, mettreAJourFrequence]);
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
-
-    /**
-     * Ajoute ou retire une note de la sélection.
-     */
-    const toggleNote = (note: Note): void => {
-        const dejaSelectionnee = notesSelectionnees.some((n) => n.midi === note.midi);
-
-        if (dejaSelectionnee) {
-            // Ne pas permettre de déselectionner si c'est la dernière note
-            if (notesSelectionnees.length === 1) return;
-            setNotesSelectionnees((prev) => prev.filter((n) => n.midi !== note.midi));
-        } else {
-            setNotesSelectionnees((prev) => [...prev, note]);
-        }
+    const toggleNote = (note: Note) => {
+        const existe = selection.some((n) => n.midi === note.midi);
+        if (existe && selection.length === 1) return;
+        setSelection((prev) =>
+            existe ? prev.filter((n) => n.midi !== note.midi) : [...prev, note]
+        );
     };
 
-    /** Sélectionne toutes les notes disponibles */
-    const toutSelectionner = (): void => setNotesSelectionnees(notesDisponibles);
-
-    /** Désélectionne toutes les notes sauf la première */
-    const toutDeselectionner = (): void =>
-        setNotesSelectionnees([notesDisponibles[0]]);
-
-    /** Lance la session avec la configuration choisie */
-    const handleDemarrer = async (): Promise<void> => {
+    const handleDemarrer = async () => {
         await demarrerCapture();
-        demarrerSession(notesSelectionnees, nombreNotesChoisi);
+        demarrerSession(selection, nombreNotes);
     };
 
-    /** Arrête tout et revient à la configuration */
-    const handleRecommencer = async (): Promise<void> => {
+    const handleRecommencer = async () => {
         await arreterCapture();
         reinitialiser();
     };
 
-    // ── Rendu ─────────────────────────────────────────────────────────────────
-
     return (
         <div className="pitch-detector">
 
-            {/* ── En-tête ── */}
             <header className="pitch-detector__header">
-                <div className="pitch-detector__badge">Module 3</div>
-                <h1 className="pitch-detector__titre">Justesse Vocale</h1>
-                <p className="pitch-detector__sous-titre">
-                    Évaluez votre précision en temps réel
-                </p>
+                <div className="badge">Module 3</div>
+                <h1 className="titre">Justesse Vocale</h1>
+                <p className="sous-titre">Évaluez votre précision en temps réel</p>
             </header>
 
-            {/* ── Phase : configuration ── */}
+            {/* ── Configuration ── */}
             {phase === "configuration" && (
-                <div className="pitch-detector__configuration">
+                <div className="pitch-detector__config">
 
-                    {/* Sélection du nombre de notes */}
                     <div className="config__section">
                         <label className="config__label">Nombre de notes</label>
-                        <div className="config__options">
-                            {OPTIONS_NOMBRE_NOTES.map((n) => (
-                                <button
-                                    key={n}
-                                    type="button"
-                                    className={`config__option-btn ${
-                                        nombreNotesChoisi === n ? "config__option-btn--actif" : ""
-                                    }`}
-                                    onClick={() => setNombreNotesChoisi(n)}
-                                >
-                                    {n}
-                                </button>
+                        <div className="config__row">
+                            {OPTIONS_NOTES.map((n) => (
+                                <button key={n} type="button"
+                                        className={`config__btn ${nombreNotes === n ? "config__btn--actif" : ""}`}
+                                        onClick={() => setNombreNotes(n)}>{n}</button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Sélection des notes */}
+                    <div className="config__section">
+                        <label className="config__label">Octave</label>
+                        <div className="config__row">
+                            {OPTIONS_OCTAVE.map((o) => (
+                                <button key={o} type="button"
+                                        className={`config__btn ${octave === o ? "config__btn--actif" : ""}`}
+                                        onClick={() => setOctave(o)}>{o}</button>
+                            ))}
+                        </div>
+                        <p className="config__info">
+                            Do{octave} = {getNotesOctave(octave)[0].frequenceHz.toFixed(1)} Hz
+                        </p>
+                    </div>
+
                     <div className="config__section">
                         <div className="config__label-row">
                             <label className="config__label">
-                                Notes à chanter
-                                <span className="config__label-count">
-                  ({notesSelectionnees.length}/{notesDisponibles.length})
-                </span>
+                                Notes <span className="config__count">({selection.length}/{notesOctave.length})</span>
                             </label>
-                            <div className="config__actions-selection">
-                                <button
-                                    type="button"
-                                    className="config__btn-selection"
-                                    onClick={toutSelectionner}
-                                >
-                                    Tout
-                                </button>
-                                <button
-                                    type="button"
-                                    className="config__btn-selection"
-                                    onClick={toutDeselectionner}
-                                >
-                                    Aucun
-                                </button>
+                            <div className="config__actions">
+                                <button type="button" className="config__btn-sm" onClick={() => setSelection(notesOctave)}>Tout</button>
+                                <button type="button" className="config__btn-sm" onClick={() => setSelection([notesOctave[0]])}>Aucun</button>
                             </div>
                         </div>
 
-                        <div className="config__notes-grille">
-                            {notesDisponibles.map((note) => {
-                                const selectionnee = notesSelectionnees.some(
-                                    (n) => n.midi === note.midi
-                                );
+                        <div className="config__grille">
+                            {notesOctave.map((note) => {
+                                const active = selection.some((n) => n.midi === note.midi);
                                 return (
-                                    <button
-                                        key={note.midi}
-                                        type="button"
-                                        className={`config__note-btn ${
-                                            selectionnee ? "config__note-btn--actif" : ""
-                                        }`}
-                                        onClick={() => toggleNote(note)}
-                                        title={`${note.frequenceHz.toFixed(1)} Hz`}
-                                    >
-                                        {note.nom}
-                                        <sub>{note.octave}</sub>
-                                    </button>
+                                    <div key={note.midi} className={`note-item ${active ? "note-item--actif" : ""}`}>
+                                        <button type="button" className="note-item__select"
+                                                onClick={() => toggleNote(note)}
+                                                title={`${note.frequenceHz.toFixed(1)} Hz`}>
+                                            {note.nom}<sub>{note.octave}</sub>
+                                        </button>
+                                        <button type="button" className="note-item__ecoute"
+                                                onClick={() => jouerNote(note.frequenceHz)}
+                                                title={`Écouter ${note.nom}${note.octave}`}>▶</button>
+                                    </div>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* Erreur micro */}
-                    {erreurCapture && (
-                        <div className="pitch-detector__erreur">
-                            <span>⚠</span>
-                            <span>{erreurCapture}</span>
-                        </div>
-                    )}
+                    {erreur && <div className="pitch-detector__erreur"><span>⚠</span><span>{erreur}</span></div>}
 
-                    <button
-                        className="pitch-detector__btn-principal"
-                        onClick={handleDemarrer}
-                        disabled={
-                            statutCapture === "chargement" || notesSelectionnees.length === 0
-                        }
-                        type="button"
-                    >
-                        {statutCapture === "chargement"
-                            ? "Accès micro…"
-                            : "Démarrer la session"}
+                    <button className="pitch-detector__btn-principal"
+                            onClick={handleDemarrer}
+                            disabled={statut === "chargement" || selection.length === 0}
+                            type="button">
+                        {statut === "chargement" ? "Accès micro…" : "Démarrer la session"}
                     </button>
 
-                    <p className="pitch-detector__mention-micro">
-                        L'accès au microphone sera demandé au démarrage.
-                    </p>
+                    <p className="pitch-detector__mention">L'accès au microphone sera demandé au démarrage.</p>
                 </div>
             )}
 
-            {/* ── Phase : session en cours ── */}
+            {/* ── Session ── */}
             {phase === "en_cours" && noteCourante && (
                 <div className="pitch-detector__session">
-
-                    <div className={`pitch-detector__statut-micro statut--${statutCapture}`}>
+                    <div className={`statut-micro statut--${statut}`}>
                         <span className="statut__point" />
-                        <span className="statut__texte">
-              {statutCapture === "actif" ? "Micro actif" : statutCapture}
-            </span>
+                        <span className="statut__texte">{statut === "actif" ? "Micro actif" : statut}</span>
                     </div>
 
-                    {/* NoteTarget reçoit désormais onSkip et progressionStabilisation */}
                     <NoteTarget
                         note={noteCourante}
                         indexNote={indexNote}
@@ -242,26 +159,21 @@ export default function PitchDetector() {
                         evaluation={evaluationTempsReel}
                         ecartCents={ecartCentsTempsReel}
                         progressionStabilisation={progressionStabilisation}
+                        noteValidee={noteValidee}
                         onSkip={skipNote}
                     />
 
-                    <button
-                        className="pitch-detector__btn-secondaire"
-                        onClick={handleRecommencer}
-                        type="button"
-                    >
-                        Abandonner
-                    </button>
+                    <button className="pitch-detector__btn-secondaire"
+                            onClick={handleRecommencer} type="button">Abandonner</button>
                 </div>
             )}
 
-            {/* ── Phase : bilan ── */}
+            {/* ── Bilan ── */}
             {phase === "terminee" && bilan && (
                 <div className="pitch-detector__bilan">
                     <ResultsSummary bilan={bilan} onRecommencer={handleRecommencer} />
                 </div>
             )}
-
         </div>
     );
 }

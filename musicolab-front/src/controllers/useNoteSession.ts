@@ -1,58 +1,31 @@
 /**
- * useNoteSession.ts
- * ─────────────────────────────────────────────────────────────────────────────
- * Controller — Hook React de gestion d'une session d'évaluation vocale.
+ * useNoteSession.ts — couche Controller (MVC)
+ * Hook React : gère la session N notes (stabilisation 3s, skip, validation, bilan).
  *
- * Responsabilités :
- *  - Gérer la progression dans la liste de notes cibles (N notes)
- *  - Collecter et stabiliser la fréquence détectée sur une fenêtre de 3 secondes
- *  - Permettre à l'utilisateur de passer une note (skip)
- *  - Évaluer chaque note chantée via le Model (evaluerJustesse)
- *  - Accumuler les résultats et générer le bilan final (genererBilan)
- *  - Exposer l'état de session et la progression de stabilisation aux Views
+ * Fix : la validation est gérée dans le setInterval (toutes les 50ms)
+ * et non dans un useEffect, ce qui évite le bug où le check des 3s
+ * ne se déclenche pas quand evaluationTempsReel reste identique.
  *
- * Notions du cours appliquées :
- *  - useState  (S3) : état de la session (note courante, résultats, phase)
- *  - useEffect (S4) : réaction aux changements de fréquence détectée
- *  - Custom Hook (S5) : logique de session extraite et réutilisable
- * ─────────────────────────────────────────────────────────────────────────────
+ * Notions du cours : useState (S3), useEffect (S4), Custom Hook (S5)
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-    evaluerJustesse,
-    calculerEcartCents,
-    genererBilan,
-    getNotesOctave,
-    type Note,
-    type ResultatNote,
-    type BilanSession,
-    type EvaluationJustesse,
+    evaluerJustesse, calculerEcartCents, genererBilan, getNotesOctave,
+    type Note, type ResultatNote, type BilanSession, type EvaluationJustesse,
 } from "../models/noteModel";
 
-// ─── Constantes de session ────────────────────────────────────────────────────
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
-/**
- * Durée en millisecondes pendant laquelle la note doit rester juste
- * avant d'être automatiquement validée.
- */
-const DUREE_STABILISATION_MS = 3_000;
+const DUREE_STABILISATION_MS   = 3_000;
+const INTERVALLE_MS            = 50;
+const DUREE_FEEDBACK_VALIDE_MS = 1_000;
+const NOMBRE_NOTES_DEFAUT      = 5;
+const OCTAVE_DEFAUT            = 4;
 
-/** Intervalle de mise à jour de la progression (ms) — affichage fluide */
-const INTERVALLE_PROGRESSION_MS = 50;
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-/** Nombre de notes par session par défaut */
-const NOMBRE_NOTES_DEFAUT = 5;
-
-/** Octave utilisée pour les notes disponibles */
-const OCTAVE_DEFAUT = 4;
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export type PhaseSession =
-    | "configuration"
-    | "en_cours"
-    | "terminee";
+export type PhaseSession = "configuration" | "en_cours" | "terminee";
 
 export interface UseNoteSessionRetour {
     phase: PhaseSession;
@@ -61,14 +34,12 @@ export interface UseNoteSessionRetour {
     totalNotes: number;
     evaluationTempsReel: EvaluationJustesse | null;
     ecartCentsTempsReel: number | null;
-    /** Progression de la stabilisation entre 0 et 1 (pour la barre de 3s) */
     progressionStabilisation: number;
+    noteValidee: boolean;
     resultats: ResultatNote[];
     bilan: BilanSession | null;
     notesDisponibles: Note[];
-    /** Démarre une session avec les notes choisies par l'utilisateur */
     demarrerSession: (notesChoisies: Note[], nombreNotes: number) => void;
-    /** Passe la note courante sans l'évaluer (comptée comme silence dans le bilan) */
     skipNote: () => void;
     reinitialiser: () => void;
     mettreAJourFrequence: (frequenceHz: number | null) => void;
@@ -77,279 +48,254 @@ export interface UseNoteSessionRetour {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useNoteSession(): UseNoteSessionRetour {
-    // ── État de la session ────────────────────────────────────────────────────
 
-    const [phase, setPhase] = useState<PhaseSession>("configuration");
-    const [indexNote, setIndexNote] = useState<number>(0);
-    const [totalNotes, setTotalNotes] = useState<number>(NOMBRE_NOTES_DEFAUT);
-    const [notesSession, setNotesSession] = useState<Note[]>([]);
-    const [resultats, setResultats] = useState<ResultatNote[]>([]);
-    const [bilan, setBilan] = useState<BilanSession | null>(null);
-    const [evaluationTempsReel, setEvaluationTempsReel] =
-        useState<EvaluationJustesse | null>(null);
-    const [ecartCentsTempsReel, setEcartCentsTempsReel] = useState<number | null>(null);
+    // ── État ──────────────────────────────────────────────────────────────────
 
-    /**
-     * Progression de stabilisation entre 0 et 1.
-     * Mise à jour toutes les 50ms via setInterval pour un affichage fluide.
-     */
-    const [progressionStabilisation, setProgressionStabilisation] = useState<number>(0);
+    const [phase, setPhase]                     = useState<PhaseSession>("configuration");
+    const [indexNote, setIndexNote]             = useState(0);
+    const [totalNotes, setTotalNotes]           = useState(NOMBRE_NOTES_DEFAUT);
+    const [notesSession, setNotesSession]       = useState<Note[]>([]);
+    const [resultats, setResultats]             = useState<ResultatNote[]>([]);
+    const [bilan, setBilan]                     = useState<BilanSession | null>(null);
+    const [evaluationTempsReel, setEvaluation]  = useState<EvaluationJustesse | null>(null);
+    const [ecartCentsTempsReel, setEcart]       = useState<number | null>(null);
+    const [progressionStabilisation, setProgression] = useState(0);
+    const [noteValidee, setNoteValidee]         = useState(false);
 
-    // ── Références ────────────────────────────────────────────────────────────
+    // ── Refs (données stables entre renders sans déclencher de re-render) ─────
 
-    /** Timestamp du début de la stabilisation */
-    const debutStabilisationRef = useRef<number | null>(null);
-    /** Dernière évaluation stable observée */
-    const derniereEvaluationRef = useRef<EvaluationJustesse | null>(null);
-    /** Fréquence courante reçue du détecteur */
-    const frequenceCouranteRef = useRef<number | null>(null);
-    /** Référence à l'intervalle de progression */
-    const intervalProgressionRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const frequenceRef        = useRef<number | null>(null);
+    const debutStabRef        = useRef<number | null>(null);
+    const derniereEvalRef     = useRef<EvaluationJustesse | null>(null);
+    const intervalRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+    const timeoutRef          = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const noteValideeRef      = useRef(false);
 
-    // Refs pour accéder à l'état actuel dans les callbacks sans re-créer les fonctions
-    const resultatsRef = useRef<ResultatNote[]>([]);
-    const indexNoteRef = useRef<number>(0);
-    const totalNotesRef = useRef<number>(NOMBRE_NOTES_DEFAUT);
-    const notesSessionRef = useRef<Note[]>([]);
+    // Miroirs de l'état pour accès dans les callbacks sans dépendances instables
+    const resultatsRef        = useRef<ResultatNote[]>([]);
+    const indexRef            = useRef(0);
+    const totalRef            = useRef(NOMBRE_NOTES_DEFAUT);
+    const notesRef            = useRef<Note[]>([]);
+    const phaseRef            = useRef<PhaseSession>("configuration");
 
-    // Synchroniser les refs avec l'état
     resultatsRef.current = resultats;
-    indexNoteRef.current = indexNote;
-    totalNotesRef.current = totalNotes;
-    notesSessionRef.current = notesSession;
+    indexRef.current     = indexNote;
+    totalRef.current     = totalNotes;
+    notesRef.current     = notesSession;
+    phaseRef.current     = phase;
+    noteValideeRef.current = noteValidee;
 
-    // Notes disponibles (octave centrale)
     const notesDisponibles = getNotesOctave(OCTAVE_DEFAUT);
-
-    // Note courante dérivée de l'index
-    const noteCourante: Note | null =
-        phase === "en_cours" ? notesSession[indexNote] ?? null : null;
-
-    // ── Gestion de la progression ─────────────────────────────────────────────
-
-    const demarrerIntervalleProgression = useCallback(() => {
-        if (intervalProgressionRef.current) return;
-        intervalProgressionRef.current = setInterval(() => {
-            if (debutStabilisationRef.current === null) {
-                setProgressionStabilisation(0);
-                return;
-            }
-            const ecoule = Date.now() - debutStabilisationRef.current;
-            const progression = Math.min(ecoule / DUREE_STABILISATION_MS, 1);
-            setProgressionStabilisation(progression);
-        }, INTERVALLE_PROGRESSION_MS);
-    }, []);
-
-    const arreterIntervalleProgression = useCallback(() => {
-        if (intervalProgressionRef.current) {
-            clearInterval(intervalProgressionRef.current);
-            intervalProgressionRef.current = null;
-        }
-        setProgressionStabilisation(0);
-    }, []);
+    const noteCourante = phase === "en_cours" ? notesSession[indexNote] ?? null : null;
 
     // ── Nettoyage au démontage (useEffect — cours S4) ────────────────────────
 
     useEffect(() => {
         return () => {
-            if (intervalProgressionRef.current) {
-                clearInterval(intervalProgressionRef.current);
-            }
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (timeoutRef.current)  clearTimeout(timeoutRef.current);
         };
     }, []);
 
-    // ── Validation interne ────────────────────────────────────────────────────
+    // ── Validation + feedback ─────────────────────────────────────────────────
 
     /**
-     * Enregistre le résultat de la note courante et avance à la suivante.
-     * Utilise les refs pour accéder à l'état actuel sans dépendances instables.
+     * Enregistre le résultat, affiche le feedback de validation (1s si juste),
+     * puis avance à la note suivante ou termine la session.
      */
-    const validerNoteCourante = useCallback(
-        (
-            frequence: number | null,
-            evaluation: EvaluationJustesse,
-            ecart: number | null
-        ): void => {
-            const noteActuelle = notesSessionRef.current[indexNoteRef.current];
+    const validerNote = useCallback(
+        (freq: number | null, evaluation: EvaluationJustesse, ecart: number | null): void => {
+            const noteActuelle = notesRef.current[indexRef.current];
             if (!noteActuelle) return;
 
             const resultat: ResultatNote = {
                 noteCible: noteActuelle,
-                frequenceDetectee: frequence,
+                frequenceDetectee: freq,
                 ecartCents: ecart !== null ? Math.round(ecart) : null,
                 evaluation,
             };
+            const nouveaux = [...resultatsRef.current, resultat];
+            setResultats(nouveaux);
 
-            const nouveauxResultats = [...resultatsRef.current, resultat];
-            setResultats(nouveauxResultats);
-
-            const prochaineNote = indexNoteRef.current + 1;
-
-            if (prochaineNote >= totalNotesRef.current) {
-                // Session terminée
-                const bilanFinal = genererBilan(nouveauxResultats);
-                setBilan(bilanFinal);
-                setPhase("terminee");
-                setEvaluationTempsReel(null);
-                setEcartCentsTempsReel(null);
-            } else {
-                // Note suivante
-                setIndexNote(prochaineNote);
-                setEvaluationTempsReel(null);
-                setEcartCentsTempsReel(null);
+            // Afficher l'overlay vert si la note était juste
+            if (evaluation === "juste") {
+                setNoteValidee(true);
+                noteValideeRef.current = true;
             }
+
+            const delai = evaluation === "juste" ? DUREE_FEEDBACK_VALIDE_MS : 0;
+
+            timeoutRef.current = setTimeout(() => {
+                setNoteValidee(false);
+                noteValideeRef.current = false;
+
+                if (indexRef.current + 1 >= totalRef.current) {
+                    // Fin de session
+                    setBilan(genererBilan(nouveaux));
+                    setPhase("terminee");
+                } else {
+                    // Note suivante
+                    setIndexNote((i) => i + 1);
+                }
+                setEvaluation(null);
+                setEcart(null);
+            }, delai);
         },
         []
     );
 
-    // ── Logique de stabilisation (useEffect — cours S4) ──────────────────────
+    // Ref stable vers validerNote pour l'utiliser dans l'interval
+    const validerNoteRef = useRef(validerNote);
+    validerNoteRef.current = validerNote;
 
-    useEffect(() => {
-        const frequence = frequenceCouranteRef.current;
+    // ── Arrêt de l'intervalle ─────────────────────────────────────────────────
 
-        if (phase !== "en_cours" || !noteCourante) return;
+    const stopInterval = useCallback(() => {
+        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        setProgression(0);
+        debutStabRef.current = null;
+    }, []);
 
-        if (frequence === null) {
-            debutStabilisationRef.current = null;
-            derniereEvaluationRef.current = null;
-            arreterIntervalleProgression();
-            return;
-        }
-
-        const evaluation = evaluerJustesse(frequence, noteCourante);
-        const ecart = calculerEcartCents(frequence, noteCourante);
-        const maintenant = Date.now();
-
-        if (evaluation !== derniereEvaluationRef.current) {
-            // Évaluation changée : réinitialiser la stabilisation
-            debutStabilisationRef.current = maintenant;
-            derniereEvaluationRef.current = evaluation;
-            arreterIntervalleProgression();
-
-            // Lancer la progression uniquement si la note est juste
-            if (evaluation === "juste") {
-                demarrerIntervalleProgression();
-            }
-            return;
-        }
-
-        // Vérifier si la durée de 3s est atteinte
-        if (
-            debutStabilisationRef.current !== null &&
-            evaluation === "juste" &&
-            maintenant - debutStabilisationRef.current >= DUREE_STABILISATION_MS
-        ) {
-            validerNoteCourante(frequence, evaluation, ecart);
-            debutStabilisationRef.current = null;
-            derniereEvaluationRef.current = null;
-            arreterIntervalleProgression();
-        }
-    }, [evaluationTempsReel, phase, noteCourante, validerNoteCourante,
-        demarrerIntervalleProgression, arreterIntervalleProgression]);
-
-    // ── Actions exposées à la View ────────────────────────────────────────────
+    // ── Démarrage de l'intervalle ─────────────────────────────────────────────
 
     /**
-     * Démarre une session avec les notes choisies par l'utilisateur.
+     * Lance l'intervalle de progression (50ms).
      *
-     * @param notesChoisies - Notes sélectionnées en configuration
-     * @param nombreNotes   - Nombre total de notes dans la session
+     * C'est ici que la validation des 3s se produit — dans l'intervalle,
+     * pas dans un useEffect — pour garantir que le check s'exécute
+     * même si evaluationTempsReel ne change pas entre deux frames.
      */
+    const startInterval = useCallback(() => {
+        if (intervalRef.current) return;
+
+        intervalRef.current = setInterval(() => {
+            // Ne rien faire si session inactive ou note en cours de validation
+            if (phaseRef.current !== "en_cours" || noteValideeRef.current) return;
+            if (debutStabRef.current === null) { setProgression(0); return; }
+
+            const ecoule = Date.now() - debutStabRef.current;
+            setProgression(Math.min(ecoule / DUREE_STABILISATION_MS, 1));
+
+            // Vérification des 3 secondes
+            if (ecoule >= DUREE_STABILISATION_MS) {
+                const freq = frequenceRef.current;
+                const note = notesRef.current[indexRef.current];
+
+                if (freq !== null && note) {
+                    const eval_ = evaluerJustesse(freq, note);
+                    if (eval_ === "juste") {
+                        // ✅ Note validée après 3s
+                        validerNoteRef.current(freq, eval_, calculerEcartCents(freq, note));
+                    }
+                }
+
+                // Arrêter l'intervalle dans tous les cas
+                clearInterval(intervalRef.current!);
+                intervalRef.current = null;
+                debutStabRef.current = null;
+                derniereEvalRef.current = null;
+                setProgression(0);
+            }
+        }, INTERVALLE_MS);
+    }, []);
+
+    // ── Mise à jour de la fréquence (appelée ~60fps par usePitchDetection) ────
+
+    const mettreAJourFrequence = useCallback(
+        (frequenceHz: number | null): void => {
+            frequenceRef.current = frequenceHz;
+
+            if (phaseRef.current !== "en_cours" || noteValideeRef.current) return;
+
+            const note = notesRef.current[indexRef.current];
+            if (!note) return;
+
+            const evaluation = evaluerJustesse(frequenceHz, note);
+
+            setEvaluation(evaluation);
+            setEcart(frequenceHz !== null ? Math.round(calculerEcartCents(frequenceHz, note)) : null);
+
+            if (evaluation !== derniereEvalRef.current) {
+                // L'évaluation a changé : réinitialiser la stabilisation
+                derniereEvalRef.current = evaluation;
+
+                if (evaluation === "juste") {
+                    // Nouvelle note juste : démarrer le compteur et l'intervalle
+                    debutStabRef.current = Date.now();
+                    startInterval();
+                } else {
+                    // Plus juste : arrêter
+                    stopInterval();
+                }
+            }
+        },
+        [startInterval, stopInterval]
+    );
+
+    // ── Actions ───────────────────────────────────────────────────────────────
+
     const demarrerSession = useCallback(
         (notesChoisies: Note[], nombreNotes: number): void => {
-            if (notesChoisies.length === 0) return;
+            if (!notesChoisies.length) return;
+            const pool: Note[] = [];
+            while (pool.length < nombreNotes)
+                pool.push(...[...notesChoisies].sort(() => Math.random() - 0.5));
 
-            // Construire la liste en tirant aléatoirement depuis le pool
-            // (avec remise si nombreNotes > notesChoisies.length)
-            const notesFinales: Note[] = [];
-            while (notesFinales.length < nombreNotes) {
-                const melange = [...notesChoisies].sort(() => Math.random() - 0.5);
-                notesFinales.push(...melange);
-            }
+            stopInterval();
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-            setNotesSession(notesFinales.slice(0, nombreNotes));
+            setNotesSession(pool.slice(0, nombreNotes));
             setTotalNotes(nombreNotes);
             setIndexNote(0);
             setResultats([]);
             setBilan(null);
-            setEvaluationTempsReel(null);
-            setEcartCentsTempsReel(null);
-            debutStabilisationRef.current = null;
-            derniereEvaluationRef.current = null;
-            arreterIntervalleProgression();
+            setEvaluation(null);
+            setEcart(null);
+            setProgression(0);
+            setNoteValidee(false);
+            noteValideeRef.current = false;
+            debutStabRef.current = null;
+            derniereEvalRef.current = null;
+            frequenceRef.current = null;
             setPhase("en_cours");
         },
-        [arreterIntervalleProgression]
+        [stopInterval]
     );
 
-    /**
-     * Passe la note courante sans la valider.
-     * Elle est comptée comme "silence" dans le bilan final.
-     */
     const skipNote = useCallback((): void => {
-        arreterIntervalleProgression();
-        debutStabilisationRef.current = null;
-        derniereEvaluationRef.current = null;
-        validerNoteCourante(null, "silence", null);
-    }, [validerNoteCourante, arreterIntervalleProgression]);
+        if (noteValideeRef.current) return;
+        stopInterval();
+        debutStabRef.current = null;
+        derniereEvalRef.current = null;
+        validerNote(null, "silence", null);
+    }, [validerNote, stopInterval]);
 
-    /**
-     * Réinitialise et revient à l'écran de configuration.
-     */
     const reinitialiser = useCallback((): void => {
-        arreterIntervalleProgression();
+        stopInterval();
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
         setPhase("configuration");
         setIndexNote(0);
         setTotalNotes(NOMBRE_NOTES_DEFAUT);
         setNotesSession([]);
         setResultats([]);
         setBilan(null);
-        setEvaluationTempsReel(null);
-        setEcartCentsTempsReel(null);
-        debutStabilisationRef.current = null;
-        derniereEvaluationRef.current = null;
-        frequenceCouranteRef.current = null;
-    }, [arreterIntervalleProgression]);
-
-    /**
-     * Reçoit la fréquence depuis usePitchDetection à chaque frame (~60fps).
-     */
-    const mettreAJourFrequence = useCallback(
-        (frequenceHz: number | null): void => {
-            frequenceCouranteRef.current = frequenceHz;
-
-            if (phase === "en_cours" && noteCourante) {
-                const evaluation = evaluerJustesse(frequenceHz, noteCourante);
-                setEvaluationTempsReel(evaluation);
-
-                if (frequenceHz !== null) {
-                    setEcartCentsTempsReel(
-                        Math.round(calculerEcartCents(frequenceHz, noteCourante))
-                    );
-                } else {
-                    setEcartCentsTempsReel(null);
-                }
-            }
-        },
-        [phase, noteCourante]
-    );
+        setEvaluation(null);
+        setEcart(null);
+        setProgression(0);
+        setNoteValidee(false);
+        noteValideeRef.current = false;
+        debutStabRef.current = null;
+        derniereEvalRef.current = null;
+        frequenceRef.current = null;
+    }, [stopInterval]);
 
     // ── Retour ────────────────────────────────────────────────────────────────
 
     return {
-        phase,
-        noteCourante,
-        indexNote,
-        totalNotes,
-        evaluationTempsReel,
-        ecartCentsTempsReel,
-        progressionStabilisation,
-        resultats,
-        bilan,
-        notesDisponibles,
-        demarrerSession,
-        skipNote,
-        reinitialiser,
-        mettreAJourFrequence,
+        phase, noteCourante, indexNote, totalNotes,
+        evaluationTempsReel, ecartCentsTempsReel,
+        progressionStabilisation, noteValidee,
+        resultats, bilan, notesDisponibles,
+        demarrerSession, skipNote, reinitialiser, mettreAJourFrequence,
     };
 }
