@@ -3,22 +3,9 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * View — Composant principal du Module 3 (Smart Component).
  *
- * Responsabilités :
- *  - Connecter les deux Controllers (usePitchDetection + useNoteSession)
- *  - Orchestrer l'affichage selon la phase de session
- *  - Gérer l'écran de configuration (choix du nombre de notes)
- *  - Transmettre les données aux composants enfants via les props
- *
- * C'est le seul composant "intelligent" du module :
- * il consomme les hooks et distribue les données aux composants enfants
- * (NoteTarget, ResultsSummary) qui sont purement présentationnels.
- *
- * Notions du cours appliquées :
- *  - Composants (S2) : arborescence PitchDetector > NoteTarget / ResultsSummary
- *  - Props (S2) : données passées aux enfants
- *  - useState (S3) : état local de configuration
- *  - useEffect (S4) : synchronisation pitch → session
- *  - Custom Hooks (S5) : usePitchDetection + useNoteSession
+ * Nouveautés :
+ *  - Sélection des notes avant la session (toggle par note)
+ *  - Transmission de onSkip et progressionStabilisation à NoteTarget
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -27,21 +14,17 @@ import "./PitchDetector.css";
 
 import { usePitchDetection } from "../../controllers/usePitchDetection";
 import { useNoteSession } from "../../controllers/useNoteSession";
+import type { Note } from "../../models/noteModel";
 
-import NoteTarget from "../NoteTarget/NoteTarget";
-import ResultsSummary from "../ResultsSummary/ResultsSummary";
+import NoteTarget from '../NoteTarget/noteTarget';
+import ResultsSummary from '../ResultSummary/resultSummary';
 
-// ─── Constantes de configuration ─────────────────────────────────────────────
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
-/** Options de nombre de notes proposées à l'utilisateur */
 const OPTIONS_NOMBRE_NOTES = [3, 5, 7, 10] as const;
 
 // ─── Composant ───────────────────────────────────────────────────────────────
 
-/**
- * Composant principal du module d'évaluation de justesse vocale.
- * Point d'entrée unique du Module 3.
- */
 export default function PitchDetector() {
 
     // ── Controllers ───────────────────────────────────────────────────────────
@@ -61,20 +44,28 @@ export default function PitchDetector() {
         totalNotes,
         evaluationTempsReel,
         ecartCentsTempsReel,
+        progressionStabilisation,
         bilan,
         notesDisponibles,
         demarrerSession,
+        skipNote,
         reinitialiser,
         mettreAJourFrequence,
     } = useNoteSession();
 
     // ── État local de configuration ───────────────────────────────────────────
 
-    /** Nombre de notes sélectionné par l'utilisateur avant le démarrage */
     const [nombreNotesChoisi, setNombreNotesChoisi] = useState<number>(5);
 
+    /**
+     * Notes sélectionnées par l'utilisateur pour la session.
+     * Par défaut : toutes les notes disponibles sont sélectionnées.
+     */
+    const [notesSelectionnees, setNotesSelectionnees] = useState<Note[]>(
+        () => notesDisponibles
+    );
+
     // ── Synchronisation pitch → session (useEffect — cours S4) ───────────────
-    // À chaque nouvelle fréquence détectée, on l'envoie au Controller de session.
 
     useEffect(() => {
         if (phase === "en_cours") {
@@ -85,27 +76,45 @@ export default function PitchDetector() {
     // ── Handlers ─────────────────────────────────────────────────────────────
 
     /**
-     * Lance la session : démarre le micro et initialise la session de notes.
+     * Ajoute ou retire une note de la sélection.
      */
-    const handleDemarrer = async (): Promise<void> => {
-        await demarrerCapture();
-        demarrerSession(nombreNotesChoisi);
+    const toggleNote = (note: Note): void => {
+        const dejaSelectionnee = notesSelectionnees.some((n) => n.midi === note.midi);
+
+        if (dejaSelectionnee) {
+            // Ne pas permettre de déselectionner si c'est la dernière note
+            if (notesSelectionnees.length === 1) return;
+            setNotesSelectionnees((prev) => prev.filter((n) => n.midi !== note.midi));
+        } else {
+            setNotesSelectionnees((prev) => [...prev, note]);
+        }
     };
 
-    /**
-     * Arrête tout et revient à l'écran de configuration.
-     */
+    /** Sélectionne toutes les notes disponibles */
+    const toutSelectionner = (): void => setNotesSelectionnees(notesDisponibles);
+
+    /** Désélectionne toutes les notes sauf la première */
+    const toutDeselectionner = (): void =>
+        setNotesSelectionnees([notesDisponibles[0]]);
+
+    /** Lance la session avec la configuration choisie */
+    const handleDemarrer = async (): Promise<void> => {
+        await demarrerCapture();
+        demarrerSession(notesSelectionnees, nombreNotesChoisi);
+    };
+
+    /** Arrête tout et revient à la configuration */
     const handleRecommencer = async (): Promise<void> => {
         await arreterCapture();
         reinitialiser();
     };
 
-    // ── Rendu conditionnel selon la phase (cours S2 — Rendu Conditionnel) ────
+    // ── Rendu ─────────────────────────────────────────────────────────────────
 
     return (
         <div className="pitch-detector">
 
-            {/* ── En-tête du module ── */}
+            {/* ── En-tête ── */}
             <header className="pitch-detector__header">
                 <div className="pitch-detector__badge">Module 3</div>
                 <h1 className="pitch-detector__titre">Justesse Vocale</h1>
@@ -118,10 +127,9 @@ export default function PitchDetector() {
             {phase === "configuration" && (
                 <div className="pitch-detector__configuration">
 
+                    {/* Sélection du nombre de notes */}
                     <div className="config__section">
-                        <label className="config__label">
-                            Nombre de notes à chanter
-                        </label>
+                        <label className="config__label">Nombre de notes</label>
                         <div className="config__options">
                             {OPTIONS_NOMBRE_NOTES.map((n) => (
                                 <button
@@ -138,19 +146,57 @@ export default function PitchDetector() {
                         </div>
                     </div>
 
-                    {/* Aperçu des notes disponibles */}
+                    {/* Sélection des notes */}
                     <div className="config__section">
-                        <label className="config__label">Notes utilisées (octave 4)</label>
-                        <div className="config__notes-disponibles">
-                            {notesDisponibles.map((note) => (
-                                <span key={note.midi} className="config__note-tag">
-                  {note.nom}{note.octave}
+                        <div className="config__label-row">
+                            <label className="config__label">
+                                Notes à chanter
+                                <span className="config__label-count">
+                  ({notesSelectionnees.length}/{notesDisponibles.length})
                 </span>
-                            ))}
+                            </label>
+                            <div className="config__actions-selection">
+                                <button
+                                    type="button"
+                                    className="config__btn-selection"
+                                    onClick={toutSelectionner}
+                                >
+                                    Tout
+                                </button>
+                                <button
+                                    type="button"
+                                    className="config__btn-selection"
+                                    onClick={toutDeselectionner}
+                                >
+                                    Aucun
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="config__notes-grille">
+                            {notesDisponibles.map((note) => {
+                                const selectionnee = notesSelectionnees.some(
+                                    (n) => n.midi === note.midi
+                                );
+                                return (
+                                    <button
+                                        key={note.midi}
+                                        type="button"
+                                        className={`config__note-btn ${
+                                            selectionnee ? "config__note-btn--actif" : ""
+                                        }`}
+                                        onClick={() => toggleNote(note)}
+                                        title={`${note.frequenceHz.toFixed(1)} Hz`}
+                                    >
+                                        {note.nom}
+                                        <sub>{note.octave}</sub>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Message d'erreur micro */}
+                    {/* Erreur micro */}
                     {erreurCapture && (
                         <div className="pitch-detector__erreur">
                             <span>⚠</span>
@@ -161,7 +207,9 @@ export default function PitchDetector() {
                     <button
                         className="pitch-detector__btn-principal"
                         onClick={handleDemarrer}
-                        disabled={statutCapture === "chargement"}
+                        disabled={
+                            statutCapture === "chargement" || notesSelectionnees.length === 0
+                        }
                         type="button"
                     >
                         {statutCapture === "chargement"
@@ -179,7 +227,6 @@ export default function PitchDetector() {
             {phase === "en_cours" && noteCourante && (
                 <div className="pitch-detector__session">
 
-                    {/* Indicateur du statut micro */}
                     <div className={`pitch-detector__statut-micro statut--${statutCapture}`}>
                         <span className="statut__point" />
                         <span className="statut__texte">
@@ -187,13 +234,15 @@ export default function PitchDetector() {
             </span>
                     </div>
 
-                    {/* Composant enfant NoteTarget — reçoit les données via props */}
+                    {/* NoteTarget reçoit désormais onSkip et progressionStabilisation */}
                     <NoteTarget
                         note={noteCourante}
                         indexNote={indexNote}
                         totalNotes={totalNotes}
                         evaluation={evaluationTempsReel}
                         ecartCents={ecartCentsTempsReel}
+                        progressionStabilisation={progressionStabilisation}
+                        onSkip={skipNote}
                     />
 
                     <button
@@ -206,14 +255,10 @@ export default function PitchDetector() {
                 </div>
             )}
 
-            {/* ── Phase : session terminée ── */}
+            {/* ── Phase : bilan ── */}
             {phase === "terminee" && bilan && (
                 <div className="pitch-detector__bilan">
-                    {/* Composant enfant ResultsSummary — reçoit le bilan via props */}
-                    <ResultsSummary
-                        bilan={bilan}
-                        onRecommencer={handleRecommencer}
-                    />
+                    <ResultsSummary bilan={bilan} onRecommencer={handleRecommencer} />
                 </div>
             )}
 
