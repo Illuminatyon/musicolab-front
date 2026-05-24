@@ -1,0 +1,219 @@
+/**
+ * ResultsSummary.css
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Styles du composant ResultsSummary.
+ * Charte graphique IUT Montreuil : noir, blanc, rouge (#C8102E)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/* ── Conteneur principal ── */
+.results-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2.5rem;
+    background-color: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+/* ── En-tête ── */
+.results-summary__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.results-summary__titre {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Score ── */
+.results-summary__score {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.results-summary__score-valeur {
+    font-size: 5rem;
+    font-weight: 900;
+    font-family: 'Courier New', monospace;
+    line-height: 1;
+}
+
+.results-summary__score-unite {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Couleurs selon performance */
+.score--excellent { color: #22c55e; }
+.score--bien      { color: #84cc16; }
+.score--passable  { color: #f59e0b; }
+.score--faible    { color: #C8102E; }
+
+.results-summary__appreciation {
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.results-summary__compteur {
+    font-size: 0.875rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Liste des résultats ── */
+.results-summary__liste {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.results-summary__liste-titre {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 0.25rem;
+}
+
+/* ── Ligne de résultat ── */
+.resultat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    background-color: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+}
+
+.resultat__note {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.resultat__index {
+    font-size: 0.75rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+    min-width: 16px;
+}
+
+.resultat__nom {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+}
+
+.resultat__nom sub {
+    font-size: 0.75rem;
+    color: #C8102E;
+}
+
+.resultat__frequence {
+    font-size: 0.75rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Écart en cents ── */
+.resultat__ecart {
+    min-width: 48px;
+    text-align: right;
+}
+
+.resultat__ecart-valeur {
+    font-size: 0.875rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Badges d'évaluation ── */
+.resultat__badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+}
+
+.resultat__badge--juste {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.resultat__badge--erreur {
+    background-color: rgba(200, 16, 46, 0.15);
+    color: #C8102E;
+    border: 1px solid rgba(200, 16, 46, 0.3);
+}
+
+.resultat__badge--silence {
+    background-color: rgba(160, 160, 160, 0.1);
+    color: #a0a0a0;
+    border: 1px solid rgba(160, 160, 160, 0.2);
+}
+
+/* ── Bouton recommencer ── */
+.results-summary__bouton-recommencer {
+    width: 100%;
+    padding: 0.875rem;
+    background-color: #C8102E;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: background-color 0.2s ease;
+}
+
+.results-summary__bouton-recommencer:hover {
+    background-color: #e8213f;
+}
+
+.results-summary__bouton-recommencer:active {
+    background-color: #a00d25;
+}
+
+/* ── Responsive mobile ── */
+@media (max-width: 480px) {
+    .results-summary {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .results-summary__score-valeur {
+        font-size: 4rem;
+    }
+
+    .resultat {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}

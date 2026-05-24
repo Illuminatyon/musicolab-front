@@ -1,0 +1,236 @@
+/**
+ * NoteTarget.css
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Styles du composant NoteTarget.
+ * Charte graphique IUT Montreuil : noir (#0a0a0a), blanc (#ffffff), rouge (#C8102E)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/* ── Variables locales ── */
+:root {
+    --iut-rouge:      #C8102E;
+    --iut-rouge-clair:#e8213f;
+    --noir:           #0a0a0a;
+    --noir-carte:     #141414;
+    --noir-bordure:   #2a2a2a;
+    --blanc:          #ffffff;
+    --blanc-attenué:  #a0a0a0;
+    --vert-juste:     #22c55e;
+    --jauge-hauteur:  12px;
+}
+
+/* ── Conteneur principal ── */
+.note-target {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2.5rem;
+    background-color: var(--noir-carte);
+    border: 1px solid var(--noir-bordure);
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+/* ── Progression ── */
+.note-target__progression {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.note-target__progression-texte {
+    font-size: 0.875rem;
+    color: var(--blanc-attenué);
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+}
+
+.note-target__barre-progression {
+    width: 100%;
+    height: 4px;
+    background-color: var(--noir-bordure);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.note-target__barre-remplissage {
+    height: 100%;
+    background-color: var(--iut-rouge);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+/* ── Note cible ── */
+.note-target__note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.note-target__nom {
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--blanc);
+    font-family: 'Courier New', monospace;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.note-target__octave {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--iut-rouge);
+    font-family: 'Courier New', monospace;
+}
+
+.note-target__frequence {
+    font-size: 0.875rem;
+    color: var(--blanc-attenué);
+    font-family: 'Courier New', monospace;
+    margin-top: 0.25rem;
+}
+
+/* ── Feedback directionnel ── */
+.note-target__feedback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    min-width: 160px;
+}
+
+.note-target__feedback-emoji {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.note-target__feedback-label {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+}
+
+/* États du feedback */
+.feedback--juste {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-color: var(--vert-juste);
+    color: var(--vert-juste);
+}
+
+.feedback--trop-haut {
+    background-color: rgba(200, 16, 46, 0.1);
+    border-color: var(--iut-rouge);
+    color: var(--iut-rouge);
+}
+
+.feedback--trop-bas {
+    background-color: rgba(200, 16, 46, 0.1);
+    border-color: var(--iut-rouge);
+    color: var(--iut-rouge);
+}
+
+.feedback--silence {
+    background-color: rgba(160, 160, 160, 0.05);
+    border-color: var(--noir-bordure);
+    color: var(--blanc-attenué);
+}
+
+/* ── Jauge de cents ── */
+.note-target__jauge-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.note-target__jauge-label {
+    font-size: 0.75rem;
+    color: var(--blanc-attenué);
+    font-family: 'Courier New', monospace;
+    min-width: 32px;
+    text-align: center;
+}
+
+.note-target__jauge {
+    position: relative;
+    flex: 1;
+    height: var(--jauge-hauteur);
+    background-color: var(--noir-bordure);
+    border-radius: calc(var(--jauge-hauteur) / 2);
+    overflow: visible;
+}
+
+/* Zone verte centrale = ±25 cents de tolérance */
+.note-target__jauge-zone-juste {
+    position: absolute;
+    top: 0;
+    left: 25%;      /* -25 cents = 25% de [0%, 100%] */
+    width: 50%;     /* 50 cents de large */
+    height: 100%;
+    background-color: rgba(34, 197, 94, 0.2);
+    border-radius: calc(var(--jauge-hauteur) / 2);
+}
+
+/* Ligne centrale = 0 cents */
+.note-target__jauge-centre {
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: calc(var(--jauge-hauteur) + 4px);
+    background-color: var(--blanc-attenué);
+    border-radius: 1px;
+}
+
+/* Curseur mobile */
+.note-target__jauge-curseur {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--noir-carte);
+    transition: left 0.1s ease;
+}
+
+.curseur--juste {
+    background-color: var(--vert-juste);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.curseur--hors {
+    background-color: var(--iut-rouge);
+    box-shadow: 0 0 8px rgba(200, 16, 46, 0.6);
+}
+
+/* ── Valeur numérique de l'écart ── */
+.note-target__ecart-valeur {
+    font-size: 0.875rem;
+    color: var(--blanc-attenué);
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Responsive mobile ── */
+@media (max-width: 480px) {
+    .note-target {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .note-target__nom {
+        font-size: 4rem;
+    }
+}
