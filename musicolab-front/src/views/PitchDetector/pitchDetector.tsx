@@ -5,14 +5,14 @@
  */
 
 import { useState, useEffect } from "react";
-import "./PitchDetector.css";
+import "./pitchDetector.css";
 
 import { usePitchDetection } from "../../controllers/usePitchDetection";
 import { useNoteSession } from "../../controllers/useNoteSession";
 import { getNotesOctave, type Note } from "../../models/noteModel";
 import { jouerNote } from "../../models/pitchModel";
 
-import NoteTarget from "../NoteTarget/NoteTarget";
+import NoteTarget from "../NoteTarget/noteTarget.tsx";
 import ResultsSummary from "../ResultsSummary/ResultsSummary";
 
 const OPTIONS_NOTES = [3, 5, 7, 10] as const;

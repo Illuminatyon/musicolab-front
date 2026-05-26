@@ -5,7 +5,7 @@
  * Notions du cours : Composants + Props (S2), Rendu Conditionnel (S2)
  */
 
-import "./NoteTarget.css";
+import "./noteTarget.css";
 import type { Note, EvaluationJustesse } from "../../models/noteModel";
 
 interface NoteTargetProps {
