@@ -234,6 +234,21 @@ export function useNoteSession(): UseNoteSessionRetour {
 
     // ── Actions ───────────────────────────────────────────────────────────────
 
+    const reinitialiserEtatCommun = useCallback((): void => {
+        stopInterval();
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setResultats([]);
+        setBilan(null);
+        setEvaluation(null);
+        setEcart(null);
+        setProgression(0);
+        setNoteValidee(false);
+        noteValideeRef.current   = false;
+        debutStabRef.current     = null;
+        derniereEvalRef.current  = null;
+        frequenceRef.current     = null;
+    }, [stopInterval]);
+
     const demarrerSession = useCallback(
         (notesChoisies: Note[], nombreNotes: number): void => {
             if (!notesChoisies.length) return;
@@ -241,53 +256,30 @@ export function useNoteSession(): UseNoteSessionRetour {
             while (pool.length < nombreNotes)
                 pool.push(...[...notesChoisies].sort(() => Math.random() - 0.5));
 
-            stopInterval();
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
+            reinitialiserEtatCommun();
             setNotesSession(pool.slice(0, nombreNotes));
             setTotalNotes(nombreNotes);
             setIndexNote(0);
-            setResultats([]);
-            setBilan(null);
-            setEvaluation(null);
-            setEcart(null);
-            setProgression(0);
-            setNoteValidee(false);
-            noteValideeRef.current = false;
-            debutStabRef.current = null;
-            derniereEvalRef.current = null;
-            frequenceRef.current = null;
             setPhase("en_cours");
         },
-        [stopInterval]
+        [reinitialiserEtatCommun]
     );
 
     const skipNote = useCallback((): void => {
         if (noteValideeRef.current) return;
         stopInterval();
-        debutStabRef.current = null;
+        debutStabRef.current    = null;
         derniereEvalRef.current = null;
         validerNote(null, "silence", null);
     }, [validerNote, stopInterval]);
 
     const reinitialiser = useCallback((): void => {
-        stopInterval();
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        reinitialiserEtatCommun();
         setPhase("configuration");
         setIndexNote(0);
         setTotalNotes(NOMBRE_NOTES_DEFAUT);
         setNotesSession([]);
-        setResultats([]);
-        setBilan(null);
-        setEvaluation(null);
-        setEcart(null);
-        setProgression(0);
-        setNoteValidee(false);
-        noteValideeRef.current = false;
-        debutStabRef.current = null;
-        derniereEvalRef.current = null;
-        frequenceRef.current = null;
-    }, [stopInterval]);
+    }, [reinitialiserEtatCommun]);
 
     // ── Retour ────────────────────────────────────────────────────────────────
 
