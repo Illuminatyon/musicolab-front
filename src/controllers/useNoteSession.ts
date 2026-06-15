@@ -270,7 +270,7 @@ export function useNoteSession(): UseNoteSessionRetour {
 
             if (evaluation !== derniereEvalRef.current) {
                 derniereEvalRef.current = evaluation;
-                evaluation === "juste" ? demarrerStab() : arreterStab();
+                if (evaluation === "juste") { demarrerStab(); } else { arreterStab(); }
             }
         },
         [demarrerStab, arreterStab]
