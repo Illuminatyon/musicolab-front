@@ -128,9 +128,9 @@ Production : https://musicolab-front.vercel.app
 
 ## Contributeurs
 
-| Nom | Module |
-|---|---|
-| Fabio Guerreiro Marques | Module 3 — Évaluation de la justesse vocale |
+| Nom                                        | Module |
+|--------------------------------------------|---|
+| Marvin Jean-Fort & Fabio Guerreiro Marques | Module 3 — Évaluation de la justesse vocale |
 
 ---
 

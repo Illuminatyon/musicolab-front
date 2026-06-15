@@ -22,6 +22,14 @@ describe("frequenceVersMidi", () => {
         expect(frequenceVersMidi(220)).toBeCloseTo(57);
     });
 
+    it("convertit Do4 (261.63 Hz) en MIDI 60", () => {
+        expect(frequenceVersMidi(261.63)).toBeCloseTo(60, 0);
+    });
+
+    it("convertit A5 (880 Hz) en MIDI 81", () => {
+        expect(frequenceVersMidi(880)).toBeCloseTo(81);
+    });
+
     it("lève une erreur pour 0 Hz", () => {
         expect(() => frequenceVersMidi(0)).toThrow();
     });
@@ -40,6 +48,14 @@ describe("midiVersFrequence", () => {
 
     it("convertit MIDI 57 en 220 Hz (A3)", () => {
         expect(midiVersFrequence(57)).toBeCloseTo(220);
+    });
+
+    it("convertit MIDI 60 en ~261.63 Hz (Do4)", () => {
+        expect(midiVersFrequence(60)).toBeCloseTo(261.63, 1);
+    });
+
+    it("chaque +12 MIDI double la fréquence (octave)", () => {
+        expect(midiVersFrequence(69 + 12)).toBeCloseTo(midiVersFrequence(69) * 2);
     });
 
     it("aller-retour : midiVersFrequence(frequenceVersMidi(f)) ≈ f", () => {
@@ -72,6 +88,19 @@ describe("midiVersNote", () => {
         expect(note.midi).toBe(72);
     });
 
+    it("MIDI 59 → Si3 (passage d'octave vers le bas)", () => {
+        const note = midiVersNote(59);
+        expect(note.nom).toBe("Si");
+        expect(note.octave).toBe(3);
+        expect(note.midi).toBe(59);
+    });
+
+    it("MIDI 61 → Do#4", () => {
+        const note = midiVersNote(61);
+        expect(note.nom).toBe("Do#");
+        expect(note.octave).toBe(4);
+    });
+
     it("la fréquence est cohérente avec midiVersFrequence", () => {
         const note = midiVersNote(60);
         expect(note.frequenceHz).toBeCloseTo(midiVersFrequence(60));
@@ -91,6 +120,21 @@ describe("frequenceVersNote", () => {
         const note = frequenceVersNote(261.63);
         expect(note.nom).toBe("Do");
         expect(note.octave).toBe(4);
+    });
+
+    it("880 Hz → La5", () => {
+        const note = frequenceVersNote(880);
+        expect(note.nom).toBe("La");
+        expect(note.octave).toBe(5);
+    });
+
+    it("une fréquence à mi-chemin entre deux notes s'arrondit à la plus proche", () => {
+        // Entre La4 (440 Hz, MIDI 69) et La#4 (MIDI 70)
+        // Le point médian en cents = +50 cents → arrondi vers MIDI 70 (La#4)
+        const freqMilieu = 440 * Math.pow(2, 50 / 1200);
+        const note = frequenceVersNote(freqMilieu);
+        expect(note.midi).toBe(70);
+        expect(note.nom).toBe("La#");
     });
 });
 
@@ -116,6 +160,17 @@ describe("calculerEcartCents", () => {
     it("retourne ~1200 cents pour une octave au-dessus (Do5 vs Do4)", () => {
         const do5 = midiVersFrequence(72);
         expect(calculerEcartCents(do5, do4)).toBeCloseTo(1200);
+    });
+
+    it("retourne ~-1200 cents pour une octave en dessous (Do3 vs Do4)", () => {
+        const do3 = midiVersFrequence(48);
+        expect(calculerEcartCents(do3, do4)).toBeCloseTo(-1200);
+    });
+
+    it("fonctionne de la même façon avec une note cible autre que Do4", () => {
+        const la4 = midiVersNote(69);
+        const la5 = midiVersFrequence(81);
+        expect(calculerEcartCents(la5, la4)).toBeCloseTo(1200);
     });
 });
 
@@ -150,6 +205,12 @@ describe("evaluerJustesse", () => {
     it('retourne "trop_haut" pour une octave au-dessus', () => {
         expect(evaluerJustesse(do4.frequenceHz * 2, do4)).toBe("trop_haut");
     });
+
+    it('fonctionne correctement avec une note cible autre que Do4', () => {
+        const la4 = midiVersNote(69);
+        const freq = la4.frequenceHz * Math.pow(2, 30 / 1200);
+        expect(evaluerJustesse(freq, la4)).toBe("trop_haut");
+    });
 });
 
 // ─── genererBilan ─────────────────────────────────────────────────────────────
@@ -159,6 +220,7 @@ describe("genererBilan", () => {
     const juste:   ResultatNote = { noteCible: note, frequenceDetectee: note.frequenceHz, ecartCents: 0,    evaluation: "juste"    };
     const silence: ResultatNote = { noteCible: note, frequenceDetectee: null,             ecartCents: null, evaluation: "silence"  };
     const faux:    ResultatNote = { noteCible: note, frequenceDetectee: note.frequenceHz, ecartCents: 50,   evaluation: "trop_haut"};
+    const tropBas: ResultatNote = { noteCible: note, frequenceDetectee: note.frequenceHz, ecartCents: -50,  evaluation: "trop_bas" };
 
     it('retourne 100% et "Excellent" si toutes les notes sont justes', () => {
         const bilan = genererBilan([juste, juste, juste]);
@@ -183,6 +245,19 @@ describe("genererBilan", () => {
         const bilan = genererBilan([]);
         expect(bilan.scorePourcentage).toBe(0);
         expect(bilan.totalNotes).toBe(0);
+    });
+
+    it('ne compte pas "trop_bas" comme note juste', () => {
+        const bilan = genererBilan([juste, tropBas]);
+        expect(bilan.notesJustes).toBe(1);
+        expect(bilan.scorePourcentage).toBe(50);
+    });
+
+    it("le champ resultats du bilan contient bien les données passées en entrée", () => {
+        const bilan = genererBilan([juste, faux]);
+        expect(bilan.resultats).toHaveLength(2);
+        expect(bilan.resultats[0].evaluation).toBe("juste");
+        expect(bilan.resultats[1].evaluation).toBe("trop_haut");
     });
 
     it("applique les bons seuils d'appréciation", () => {
@@ -236,5 +311,25 @@ describe("getNotesOctave", () => {
         const do4 = getNotesOctave(4)[0];
         const do5 = getNotesOctave(5)[0];
         expect(do5.frequenceHz).toBeCloseTo(do4.frequenceHz * 2);
+    });
+
+    it("les numéros MIDI sont consécutifs et croissants de 1 en 1", () => {
+        const notes = getNotesOctave(4);
+        for (let i = 1; i < notes.length; i++) {
+            expect(notes[i].midi).toBe(notes[i - 1].midi + 1);
+        }
+    });
+
+    it("Do#4 est bien à l'index 1", () => {
+        const notes = getNotesOctave(4);
+        expect(notes[1].nom).toBe("Do#");
+        expect(notes[1].octave).toBe(4);
+    });
+
+    it("fonctionne correctement pour une octave basse (octave 2)", () => {
+        const notes = getNotesOctave(2);
+        expect(notes).toHaveLength(12);
+        expect(notes[0].nom).toBe("Do");
+        expect(notes[0].octave).toBe(2);
     });
 });
