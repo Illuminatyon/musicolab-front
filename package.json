@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "lint": "eslint musicolab-front",
+    "lint": "eslint src",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
