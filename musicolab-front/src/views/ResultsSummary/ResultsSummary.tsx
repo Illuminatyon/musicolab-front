@@ -5,21 +5,20 @@
  */
 
 import "./ResultsSummary.css";
-import type { BilanSession, EvaluationJustesse } from "../../models/noteModel";
+import LigneResultat from "./components/LigneResultat";
+import type { BilanSession } from "../../models/noteModel";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ResultsSummaryProps {
     bilan: BilanSession;
     onRecommencer: () => void;
 }
 
-const LABEL: Record<EvaluationJustesse, string> = {
-    juste: "Juste ✓", trop_haut: "Trop haut ↑", trop_bas: "Trop bas ↓", silence: "Passé …",
-};
-const CLASSE: Record<EvaluationJustesse, string> = {
-    juste: "badge--juste", trop_haut: "badge--erreur", trop_bas: "badge--erreur", silence: "badge--silence",
-};
+// ─── Composant ────────────────────────────────────────────────────────────────
 
 export default function ResultsSummary({ bilan, onRecommencer }: ResultsSummaryProps) {
+
     const classeScore = bilan.scorePourcentage >= 90 ? "score--excellent"
         : bilan.scorePourcentage >= 70 ? "score--bien"
             : bilan.scorePourcentage >= 50 ? "score--passable"
@@ -27,6 +26,8 @@ export default function ResultsSummary({ bilan, onRecommencer }: ResultsSummaryP
 
     return (
         <div className="results">
+
+            {/* En-tête — score global et appréciation */}
             <div className="results__header">
                 <h2 className="results__titre">Bilan de session</h2>
                 <div className={`results__score ${classeScore}`}>
@@ -39,26 +40,18 @@ export default function ResultsSummary({ bilan, onRecommencer }: ResultsSummaryP
                 </p>
             </div>
 
+            {/* Liste des résultats note par note */}
             <div className="results__liste">
                 <h3 className="results__liste-titre">Détail</h3>
                 {bilan.resultats.map((r, i) => (
-                    <div key={i} className="resultat">
-                        <div className="resultat__note">
-                            <span className="resultat__index">{i + 1}</span>
-                            <span className="resultat__nom">{r.noteCible.nom}<sub>{r.noteCible.octave}</sub></span>
-                            <span className="resultat__hz">{r.noteCible.frequenceHz.toFixed(1)} Hz</span>
-                        </div>
-                        <span className="resultat__ecart">
-              {r.ecartCents !== null ? `${r.ecartCents > 0 ? "+" : ""}${r.ecartCents}¢` : "—"}
-            </span>
-                        <span className={`resultat__badge ${CLASSE[r.evaluation]}`}>{LABEL[r.evaluation]}</span>
-                    </div>
+                    <LigneResultat key={i} resultat={r} index={i} />
                 ))}
             </div>
 
             <button className="results__btn" onClick={onRecommencer} type="button">
                 Nouvelle session
             </button>
+
         </div>
     );
 }
