@@ -16,12 +16,13 @@
 
 import type { Note, EvaluationJustesse } from "../../models/noteModel.ts";
 import NoteTarget from "../NoteTarget/noteTarget.tsx";
+import { type StatutCapture } from "../../controllers/usePitchDetection.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SessionEnCoursProps {
     /** Statut du microphone — détermine la couleur de l'indicateur */
-    statut: string;
+    statut: StatutCapture;
     /** Note que l'utilisateur doit chanter actuellement */
     noteCourante: Note;
     /** Index de la note courante dans la session */

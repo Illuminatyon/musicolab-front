@@ -1,5 +1,6 @@
 import { getNotesOctave, type Note } from "../../models/noteModel.ts";
 import { jouerNote } from "../../models/pitchModel.ts";
+import { type StatutCapture } from "../../controllers/usePitchDetection.ts";
 
 const OPTIONS_NOTES  = [3, 5, 7, 10] as const;
 const OPTIONS_OCTAVE = [2, 3, 4, 5]  as const;
@@ -15,7 +16,7 @@ interface Props {
     onToutSelectionner: () => void;
     onAucun:           () => void;
     erreur:            string | null;
-    statut:            string;
+    statut:            StatutCapture;
     onDemarrer:        () => void;
 }
 
