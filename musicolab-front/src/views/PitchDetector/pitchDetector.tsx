@@ -11,9 +11,9 @@ import { usePitchDetection } from "../../controllers/usePitchDetection";
 import { useNoteSession } from "../../controllers/useNoteSession";
 import { getNotesOctave, type Note } from "../../models/noteModel";
 
-import ConfigSession   from "./ConfigSession";
-import SessionEnCours  from "./SessionEnCours";
-import ResultsSummary  from "../ResultsSummary/ResultsSummary";
+import ConfigSession  from "./ConfigSession";
+import SessionEnCours from "./SessionEnCours";
+import ResultsSummary from "../ResultsSummary/ResultsSummary";
 
 export default function PitchDetector() {
 
@@ -35,11 +35,7 @@ export default function PitchDetector() {
 
     const [nombreNotes, setNombreNotes] = useState(5);
     const [octave, setOctave]           = useState(4);
-    const notesOctave                   = getNotesOctave(octave);
-    const [selection, setSelection]     = useState<Note[]>(notesOctave);
-
-    // Réinitialise la sélection de notes quand l'octave change
-    useEffect(() => { setSelection(getNotesOctave(octave)); }, [octave]);
+    const [selection, setSelection]     = useState<Note[]>(() => getNotesOctave(4));
 
     // Transmet la fréquence détectée au controller de session à chaque frame
     useEffect(() => {
@@ -48,9 +44,18 @@ export default function PitchDetector() {
 
     // ── Handlers ─────────────────────────────────────────────────────────────
 
+    /**
+     * Change l'octave ET réinitialise la sélection en une seule opération,
+     * ce qui évite d'avoir un useEffect qui appelle setState (anti-pattern).
+     */
+    const handleOctaveChange = (nouvelOctave: number): void => {
+        setOctave(nouvelOctave);
+        setSelection(getNotesOctave(nouvelOctave));
+    };
+
     const toggleNote = (note: Note): void => {
         const existe = selection.some((n) => n.midi === note.midi);
-        if (existe && selection.length === 1) return; // toujours au moins une note
+        if (existe && selection.length === 1) return;
         setSelection((prev) =>
             existe ? prev.filter((n) => n.midi !== note.midi) : [...prev, note]
         );
@@ -66,12 +71,13 @@ export default function PitchDetector() {
         reinitialiser();
     };
 
+    const notesOctave = getNotesOctave(octave);
+
     // ── Rendu ─────────────────────────────────────────────────────────────────
 
     return (
         <div className="pitch-detector">
 
-            {/* En-tête fixe — visible dans toutes les phases */}
             <header className="pitch-detector__header">
                 <div className="badge">Module 3</div>
                 <h1 className="titre">Justesse Vocale</h1>
@@ -82,7 +88,7 @@ export default function PitchDetector() {
             {phase === "configuration" && (
                 <ConfigSession
                     nombreNotes={nombreNotes}   onNombreNotes={setNombreNotes}
-                    octave={octave}             onOctave={setOctave}
+                    octave={octave}             onOctave={handleOctaveChange}
                     selection={selection}       notesOctave={notesOctave}
                     onToggleNote={toggleNote}
                     onToutSelectionner={() => setSelection(notesOctave)}

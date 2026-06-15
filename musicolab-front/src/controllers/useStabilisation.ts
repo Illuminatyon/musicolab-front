@@ -4,7 +4,7 @@
  * Responsabilité unique : gérer le timer de 3s et la progression visuelle.
  */
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useLayoutEffect, useRef, useCallback, useEffect } from "react";
 
 const DUREE_STABILISATION_MS = 3_000;
 const INTERVALLE_MS = 50;
@@ -29,7 +29,11 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
     const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
     const debutRef      = useRef<number | null>(null);
     const onValideRef   = useRef(onValide);
-    onValideRef.current = onValide;
+
+    // Mise à jour de la ref via useLayoutEffect pour respecter react-hooks/refs
+    useLayoutEffect(() => {
+        onValideRef.current = onValide;
+    });
 
     // Nettoyage au démontage
     useEffect(() => {
@@ -37,7 +41,10 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
     }, []);
 
     const arreter = useCallback(() => {
-        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
         debutRef.current = null;
         setProgression(0);
     }, []);
@@ -56,7 +63,7 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
             if (ecoule >= DUREE_STABILISATION_MS) {
                 clearInterval(intervalRef.current!);
                 intervalRef.current = null;
-                debutRef.current = null;
+                debutRef.current    = null;
                 setProgression(0);
                 onValideRef.current(); // ✅ déclenche la validation
             }

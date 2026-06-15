@@ -8,7 +8,7 @@
  * Notions du cours : useState (S3), useEffect (S4), Custom Hook (S5)
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import {
     evaluerJustesse, calculerEcartCents, genererBilan, getNotesOctave,
     type Note, type ResultatNote, type BilanSession, type EvaluationJustesse,
@@ -32,7 +32,6 @@ export interface UseNoteSessionRetour {
     totalNotes: number;
     evaluationTempsReel: EvaluationJustesse | null;
     ecartCentsTempsReel: number | null;
-    /** Progression de stabilisation entre 0 et 1 — gérée par useStabilisation */
     progressionStabilisation: number;
     noteValidee: boolean;
     resultats: ResultatNote[];
@@ -60,7 +59,10 @@ export function useNoteSession(): UseNoteSessionRetour {
     const [ecartCentsTempsReel, setEcart]            = useState<number | null>(null);
     const [noteValidee, setNoteValidee]              = useState(false);
 
-    // ── Refs miroirs (accès stable dans les callbacks) ────────────────────────
+    // ── Refs miroirs ──────────────────────────────────────────────────────────
+    // Ces refs permettent d'accéder à l'état courant depuis les callbacks
+    // (intervals, timeouts) sans créer de dépendances instables.
+    // Mise à jour via useLayoutEffect pour respecter la règle react-hooks/refs.
 
     const frequenceRef     = useRef<number | null>(null);
     const derniereEvalRef  = useRef<EvaluationJustesse | null>(null);
@@ -72,17 +74,21 @@ export function useNoteSession(): UseNoteSessionRetour {
     const notesRef         = useRef<Note[]>([]);
     const phaseRef         = useRef<PhaseSession>("configuration");
 
-    resultatsRef.current   = resultats;
-    indexRef.current       = indexNote;
-    totalRef.current       = totalNotes;
-    notesRef.current       = notesSession;
-    phaseRef.current       = phase;
-    noteValideeRef.current = noteValidee;
+    // Synchronisation des refs après chaque render (useLayoutEffect = synchrone,
+    // avant que le navigateur ne peigne, garantit la cohérence dans les callbacks)
+    useLayoutEffect(() => {
+        resultatsRef.current   = resultats;
+        indexRef.current       = indexNote;
+        totalRef.current       = totalNotes;
+        notesRef.current       = notesSession;
+        phaseRef.current       = phase;
+        noteValideeRef.current = noteValidee;
+    });
 
     const notesDisponibles = getNotesOctave(OCTAVE_DEFAUT);
     const noteCourante     = phase === "en_cours" ? notesSession[indexNote] ?? null : null;
 
-    // ── Nettoyage au démontage (useEffect — cours S4) ────────────────────────
+    // ── Nettoyage au démontage ────────────────────────────────────────────────
 
     useEffect(() => {
         return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
@@ -90,10 +96,6 @@ export function useNoteSession(): UseNoteSessionRetour {
 
     // ── Validation + feedback ─────────────────────────────────────────────────
 
-    /**
-     * Enregistre le résultat de la note courante, affiche l'overlay de validation
-     * pendant 1s si juste, puis avance à la note suivante ou termine la session.
-     */
     const validerNote = useCallback(
         (freq: number | null, evaluation: EvaluationJustesse, ecart: number | null): void => {
             const noteActuelle = notesRef.current[indexRef.current];
@@ -108,7 +110,6 @@ export function useNoteSession(): UseNoteSessionRetour {
             const nouveaux = [...resultatsRef.current, resultat];
             setResultats(nouveaux);
 
-            // Afficher l'overlay vert uniquement si la note était juste
             if (evaluation === "juste") {
                 setNoteValidee(true);
                 noteValideeRef.current = true;
@@ -133,16 +134,14 @@ export function useNoteSession(): UseNoteSessionRetour {
         []
     );
 
-    // Ref stable vers validerNote — utilisée depuis le callback useStabilisation
-    const validerNoteRef      = useRef(validerNote);
-    validerNoteRef.current    = validerNote;
+    // Ref stable vers validerNote — mise à jour via useLayoutEffect
+    const validerNoteRef = useRef(validerNote);
+    useLayoutEffect(() => {
+        validerNoteRef.current = validerNote;
+    });
 
     // ── useStabilisation — timer 3s délégué ──────────────────────────────────
 
-    /**
-     * Callback appelé par useStabilisation quand les 3s sont écoulées.
-     * On vérifie une dernière fois que la note est toujours juste avant de valider.
-     */
     const handleValide = useCallback(() => {
         const freq = frequenceRef.current;
         const note = notesRef.current[indexRef.current];
@@ -160,17 +159,12 @@ export function useNoteSession(): UseNoteSessionRetour {
         arreter: arreterStab,
     } = useStabilisation({ onValide: handleValide });
 
-    // ── Mise à jour de la fréquence (~60fps via usePitchDetection) ────────────
+    // ── Mise à jour de la fréquence (~60fps) ──────────────────────────────────
 
-    /**
-     * Reçoit la fréquence détectée à chaque frame.
-     * Déclenche ou arrête la stabilisation selon l'évaluation.
-     */
     const mettreAJourFrequence = useCallback(
         (frequenceHz: number | null): void => {
             frequenceRef.current = frequenceHz;
 
-            // Ne rien faire si session inactive ou overlay de validation affiché
             if (phaseRef.current !== "en_cours" || noteValideeRef.current) return;
 
             const note = notesRef.current[indexRef.current];
@@ -184,14 +178,12 @@ export function useNoteSession(): UseNoteSessionRetour {
                     : null
             );
 
-            // Réagir uniquement si l'évaluation a changé
             if (evaluation !== derniereEvalRef.current) {
                 derniereEvalRef.current = evaluation;
-
                 if (evaluation === "juste") {
-                    demarrerStab(); // ▶ lance le timer 3s
+                    demarrerStab();
                 } else {
-                    arreterStab();  // ■ réinitialise le timer
+                    arreterStab();
                 }
             }
         },
@@ -200,10 +192,6 @@ export function useNoteSession(): UseNoteSessionRetour {
 
     // ── Actions ───────────────────────────────────────────────────────────────
 
-    /**
-     * Réinitialise tous les états et refs communs entre demarrerSession
-     * et reinitialiser, pour éviter la duplication de code.
-     */
     const reinitialiserEtatCommun = useCallback((): void => {
         arreterStab();
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -217,14 +205,9 @@ export function useNoteSession(): UseNoteSessionRetour {
         frequenceRef.current    = null;
     }, [arreterStab]);
 
-    /**
-     * Lance une nouvelle session avec les notes choisies par l'utilisateur.
-     * Mélange aléatoirement et répète si nécessaire pour atteindre nombreNotes.
-     */
     const demarrerSession = useCallback(
         (notesChoisies: Note[], nombreNotes: number): void => {
             if (!notesChoisies.length) return;
-
             const pool: Note[] = [];
             while (pool.length < nombreNotes)
                 pool.push(...[...notesChoisies].sort(() => Math.random() - 0.5));
@@ -238,10 +221,6 @@ export function useNoteSession(): UseNoteSessionRetour {
         [reinitialiserEtatCommun]
     );
 
-    /**
-     * Passe la note courante sans la valider.
-     * Elle sera comptée comme "silence" dans le bilan.
-     */
     const skipNote = useCallback((): void => {
         if (noteValideeRef.current) return;
         arreterStab();
@@ -249,9 +228,6 @@ export function useNoteSession(): UseNoteSessionRetour {
         validerNote(null, "silence", null);
     }, [validerNote, arreterStab]);
 
-    /**
-     * Réinitialise complètement la session et revient à l'écran de configuration.
-     */
     const reinitialiser = useCallback((): void => {
         reinitialiserEtatCommun();
         setPhase("configuration");
