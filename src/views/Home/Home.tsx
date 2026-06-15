@@ -26,7 +26,7 @@ const MODULES: ModuleConfig[] = [
         numero: 2,
         titre: "Rhythm Circle",
         description: "Composez des rythmes sur 3 pistes simultanées avec un cercle interactif et un tempo réglable en BPM.",
-        route: null,
+        route: "/module/2",
         emoji: "🥁",
     },
     {
