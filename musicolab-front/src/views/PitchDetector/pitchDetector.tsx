@@ -1,27 +1,49 @@
 /**
- * PitchDetector.tsx — couche View, Smart Component (MVC)
- * Orchestre les hooks Controllers et distribue les données aux composants enfants.
- * Notions du cours : Composants/Props (S2), useState (S3), useEffect (S4), Custom Hooks (S5)
+ * @file pitchDetector.tsx
+ * @description Couche View — Smart Component principal du Module 3.
+ *
+ * PitchDetector est le seul composant "intelligent" du module :
+ * il consomme les hooks Controllers et distribue les données
+ * aux composants enfants présentationnels via props.
+ *
+ * Phases gérées :
+ * - "configuration" → ConfigSession (choix notes, octave, nombre)
+ * - "en_cours"      → SessionEnCours (évaluation temps réel)
+ * - "terminee"      → ResultsSummary (bilan final)
+ *
+ * Notions du cours appliquées :
+ * - Composants + Props (S2) : distribution aux enfants
+ * - Rendu Conditionnel (S2) : switch entre les 3 phases
+ * - useState (S3) : état local de configuration
+ * - useEffect (S4) : synchronisation pitch → session
+ * - Custom Hooks (S5) : usePitchDetection + useNoteSession
  */
 
 import { useState, useEffect } from "react";
 import "./pitchDetector.css";
 
 import { usePitchDetection } from "../../controllers/usePitchDetection";
-import { useNoteSession } from "../../controllers/useNoteSession";
+import { useNoteSession }    from "../../controllers/useNoteSession";
 import { getNotesOctave, type Note } from "../../models/noteModel";
 
 import ConfigSession  from "./ConfigSession";
 import SessionEnCours from "./SessionEnCours";
 import ResultsSummary from "../ResultsSummary/ResultsSummary";
 
+// ─── Composant ────────────────────────────────────────────────────────────────
+
+/**
+ * Composant racine du Module 3 — Évaluation de la justesse vocale.
+ * Point d'entrée unique monté dans App.tsx.
+ */
 export default function PitchDetector() {
 
     // ── Controllers ───────────────────────────────────────────────────────────
 
     const {
         frequenceHz, statut, erreur,
-        demarrer: demarrerCapture, arreter: arreterCapture,
+        demarrer: demarrerCapture,
+        arreter: arreterCapture,
     } = usePitchDetection();
 
     const {
@@ -35,9 +57,19 @@ export default function PitchDetector() {
 
     const [nombreNotes, setNombreNotes] = useState(5);
     const [octave, setOctave]           = useState(4);
-    const [selection, setSelection]     = useState<Note[]>(() => getNotesOctave(4));
 
-    // Transmet la fréquence détectée au controller de session à chaque frame
+    /**
+     * Sélection de notes initialisée avec toutes les notes de l'octave 4.
+     * Mise à jour par handleOctaveChange quand l'octave change.
+     */
+    const [selection, setSelection] = useState<Note[]>(() => getNotesOctave(4));
+
+    // ── Synchronisation pitch → session ───────────────────────────────────────
+
+    /**
+     * Transmet la fréquence détectée au controller de session à chaque frame.
+     * Uniquement pendant la phase "en_cours" pour éviter les calculs inutiles.
+     */
     useEffect(() => {
         if (phase === "en_cours") mettreAJourFrequence(frequenceHz);
     }, [frequenceHz, phase, mettreAJourFrequence]);
@@ -45,14 +77,22 @@ export default function PitchDetector() {
     // ── Handlers ─────────────────────────────────────────────────────────────
 
     /**
-     * Change l'octave ET réinitialise la sélection en une seule opération,
-     * ce qui évite d'avoir un useEffect qui appelle setState (anti-pattern).
+     * Change l'octave ET réinitialise la sélection en une seule opération.
+     * Évite l'anti-pattern useEffect + setState pour une dérivation d'état simple.
+     *
+     * @param nouvelOctave - Numéro du nouvel octave sélectionné
      */
     const handleOctaveChange = (nouvelOctave: number): void => {
         setOctave(nouvelOctave);
         setSelection(getNotesOctave(nouvelOctave));
     };
 
+    /**
+     * Ajoute ou retire une note de la sélection.
+     * Empêche de déselectionner si c'est la dernière note (minimum 1).
+     *
+     * @param note - Note à toggler dans la sélection
+     */
     const toggleNote = (note: Note): void => {
         const existe = selection.some((n) => n.midi === note.midi);
         if (existe && selection.length === 1) return;
@@ -61,11 +101,19 @@ export default function PitchDetector() {
         );
     };
 
+    /**
+     * Démarre la capture microphone puis lance la session.
+     * L'ordre est important : le micro doit être actif avant de démarrer la session.
+     */
     const handleDemarrer = async (): Promise<void> => {
         await demarrerCapture();
         demarrerSession(selection, nombreNotes);
     };
 
+    /**
+     * Arrête la capture microphone et réinitialise la session.
+     * Appelé par le bouton "Abandonner" et le bouton "Nouvelle session".
+     */
     const handleRecommencer = async (): Promise<void> => {
         await arreterCapture();
         reinitialiser();
@@ -78,6 +126,7 @@ export default function PitchDetector() {
     return (
         <div className="pitch-detector">
 
+            {/* En-tête — affiché dans toutes les phases */}
             <header className="pitch-detector__header">
                 <div className="badge">Module 3</div>
                 <h1 className="titre">Justesse Vocale</h1>
@@ -115,7 +164,7 @@ export default function PitchDetector() {
                 />
             )}
 
-            {/* Phase 3 — Bilan */}
+            {/* Phase 3 — Bilan de fin de session */}
             {phase === "terminee" && bilan && (
                 <div className="pitch-detector__bilan">
                     <ResultsSummary bilan={bilan} onRecommencer={handleRecommencer} />
