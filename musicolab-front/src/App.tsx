@@ -1,34 +1,29 @@
-import { useState } from "react";
+/**
+
+ App.tsx — Point d'entrée de l'application MusicoLab.
+ Configure le routeur React Router et définit les routes des 4 modules.*/
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
+
+import Home         from "./views/Home/Home";
 import PitchDetector from "./views/PitchDetector/pitchDetector";
-import AudioVisualizer from "./views/AudioVisualizer/audioVisualizer";
-
-type ModuleActif = "m3" | "m4";
-
-const MODULES: { id: ModuleActif; label: string }[] = [
-    { id: "m3", label: "Module 3 — Justesse Vocale" },
-    { id: "m4", label: "Module 4 — Visualisation Audio" },
-];
 
 export default function App() {
-    const [moduleActif, setModuleActif] = useState<ModuleActif>("m4");
-
     return (
-        <main>
-            <nav className="app-nav">
-                {MODULES.map(({ id, label }) => (
-                    <button
-                        key={id}
-                        type="button"
-                        className={`app-nav__btn ${moduleActif === id ? "app-nav__btn--actif" : ""}`}
-                        onClick={() => setModuleActif(id)}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </nav>
-            {moduleActif === "m3" && <PitchDetector />}
-            {moduleActif === "m4" && <AudioVisualizer />}
-        </main>
+        <BrowserRouter>
+            <Routes>
+                {/* Page d'accueil — sélection des modules /}
+                <Route path="/"          element={<Home />} />
+
+                {/ Module 3 — Évaluation de la justesse vocale /}
+                <Route path="/module/3"  element={<PitchDetector />} />
+
+                {/ Les autres modules seront ajoutés par les autres membres /}
+                {/ <Route path="/module/1" element={<MidiTranspose />} /> /}
+                {/ <Route path="/module/2" element={<RhythmCircle />} /> /}
+                {/ <Route path="/module/4" element={<AudioVisualizer />} /> */}
+            </Routes>
+        </BrowserRouter>
     );
 }
