@@ -1,0 +1,115 @@
+/* AudioVisualizer.css — Charte IUT Montreuil : noir / blanc / rouge #C8102E */
+
+.audio-visualizer {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2rem; min-height: 100vh; padding: 2rem 1rem;
+    background: #0a0a0a; color: #fff;
+}
+
+/* ── Header — reprend les classes partagées .badge / .titre / .sous-titre ── */
+.audio-visualizer__header { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+
+/* ── Zone de dépôt ── */
+.audio-visualizer__dropzone {
+    width: 100%; max-width: 480px;
+    border: 2px dashed #2a2a2a;
+    border-radius: 0.75rem;
+    padding: 2.5rem 1.5rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    display: flex; justify-content: center; align-items: center;
+    user-select: none;
+}
+.audio-visualizer__dropzone:hover { border-color: rgba(200,16,46,0.5); background: rgba(200,16,46,0.04); }
+.audio-visualizer__dropzone.dropzone--fichier { border-style: solid; border-color: #C8102E; background: rgba(200,16,46,0.06); }
+.audio-visualizer__dropzone.dropzone--glisse  { border-color: #C8102E; background: rgba(200,16,46,0.1); }
+
+.dropzone__input { display: none; }
+
+.dropzone__invite,
+.dropzone__fichier {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    pointer-events: none;
+}
+.dropzone__icone  { font-size: 2rem; color: #C8102E; line-height: 1; }
+.dropzone__texte  { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
+.dropzone__formats{ font-size: 0.75rem; color: #555; font-family: 'Courier New', monospace; letter-spacing: 0.1em; margin-top: 0.25rem; }
+.dropzone__nom    { font-size: 0.9rem; font-weight: 700; color: #fff; font-family: 'Courier New', monospace; word-break: break-all; text-align: center; }
+.dropzone__taille { font-size: 0.75rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
+
+/* ── Erreur ── */
+.audio-visualizer__erreur {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.3); border-radius: 0.5rem;
+    color: #C8102E; font-size: 0.875rem; font-family: 'Courier New', monospace;
+    width: 100%; max-width: 480px;
+}
+
+/* ── Actions ── */
+.audio-visualizer__actions { display: flex; gap: 1rem; align-items: center; width: 100%; max-width: 480px; }
+
+.audio-visualizer__btn-principal {
+    flex: 1; padding: 1rem;
+    background: #C8102E; color: #fff;
+    font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    border: none; border-radius: 0.5rem; cursor: pointer;
+    font-family: 'Courier New', monospace; transition: background 0.2s ease;
+}
+.audio-visualizer__btn-principal:hover:not(:disabled) { background: #e8213f; }
+.audio-visualizer__btn-principal:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.audio-visualizer__btn-secondaire {
+    padding: 0.625rem 1.5rem;
+    background: transparent; color: #a0a0a0;
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    border: 1px solid #2a2a2a; border-radius: 0.5rem; cursor: pointer;
+    font-family: 'Courier New', monospace; transition: all 0.15s ease;
+}
+.audio-visualizer__btn-secondaire:hover { border-color: #C8102E; color: #C8102E; }
+
+/* ── Résultats ── */
+.audio-visualizer__resultats {
+    display: flex; flex-direction: column; align-items: center; gap: 2rem;
+    width: 100%; max-width: 860px;
+}
+
+/* ── Métadonnées ── */
+.meta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+
+.meta__item {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    padding: 1rem 1.5rem;
+    background: #141414; border: 1px solid #2a2a2a; border-radius: 0.75rem;
+    min-width: 140px;
+}
+.meta__label {
+    font-size: 0.7rem; font-weight: 700; color: #a0a0a0;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: 'Courier New', monospace;
+}
+.meta__valeur {
+    font-size: 1.5rem; font-weight: 900; color: #fff;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Canvas sections ── */
+.canvas-section { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
+
+.canvas-section__titre {
+    font-size: 0.8rem; font-weight: 700; color: #a0a0a0;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: 'Courier New', monospace;
+    text-align: left; margin: 0;
+}
+
+.canvas-section__canvas {
+    width: 100%; height: auto; display: block;
+    border: 1px solid #2a2a2a; border-radius: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .audio-visualizer { padding: 1.5rem 1rem; }
+    .meta__item { min-width: 100px; padding: 0.75rem 1rem; }
+    .meta__valeur { font-size: 1.25rem; }
+}
