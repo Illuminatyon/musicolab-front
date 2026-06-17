@@ -32,8 +32,8 @@ interface ResultsSummaryProps {
 /**
  * Bilan de fin de session d'évaluation vocale.
  *
- * @param props.bilan - Données de bilan calculées par le Model
- * @param props.onRecommencer - Action de retour à la configuration
+ * @param bilan - Données de bilan calculées par le Model
+ * @param onRecommencer - Action de retour à la configuration
  */
 export default function ResultsSummary({ bilan, onRecommencer }: ResultsSummaryProps) {
 

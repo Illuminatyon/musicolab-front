@@ -46,8 +46,8 @@ interface LigneResultatProps {
 /**
  * Ligne individuelle du tableau de bilan de session.
  *
- * @param props.resultat - Données de résultat pour cette note
- * @param props.index - Index 0-based (affiché +1 dans l'UI)
+ * @param resultat - Données de résultat pour cette note
+ * @param index - Index 0-based (affiché +1 dans l'UI)
  *
  * @example
  * <LigneResultat

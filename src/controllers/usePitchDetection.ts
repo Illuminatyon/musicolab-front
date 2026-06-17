@@ -99,7 +99,8 @@ export function usePitchDetection(): UsePitchDetectionRetour {
     useEffect(() => {
         return () => {
             arreterBoucleRef.current?.();
-            if (sessionRef.current) libererAudio(sessionRef.current);
+            if (sessionRef.current)
+                libererAudio(sessionRef.current);
         };
     }, []);
 

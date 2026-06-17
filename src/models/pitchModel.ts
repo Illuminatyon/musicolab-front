@@ -132,7 +132,7 @@ export async function initialiserAudio(): Promise<SessionAudio> {
  *
  * @returns Fonction de détection prête à l'emploi (Float32Array → Hz | null)
  */
-export function creerDetecteurPitch(): (buffer: Float32Array) => number | null {
+export function creerDetecteurPitch(): (buffer: Float32Array<ArrayBuffer>) => number | null {
     return Pitchfinder.YIN({
         sampleRate: SAMPLE_RATE,
         probabilityThreshold: 0.15,
@@ -151,7 +151,7 @@ export function creerDetecteurPitch(): (buffer: Float32Array) => number | null {
  */
 export function lirePitch(
     analyser: AnalyserNode,
-    detecterPitch: (buffer: Float32Array) => number | null
+    detecterPitch: (buffer: Float32Array<ArrayBuffer>) => number | null
 ): number | null {
     const buffer = new Float32Array(analyser.fftSize);
     analyser.getFloatTimeDomainData(buffer);
@@ -186,7 +186,7 @@ export function lirePitch(
  */
 export function demarrerBoucleAnalyse(
     session: SessionAudio,
-    detecterPitch: (buffer: Float32Array) => number | null,
+    detecterPitch: (buffer: Float32Array<ArrayBuffer>) => number | null,
     callback: CallbackPitch
 ): () => void {
     let idAnimation: number;

@@ -44,8 +44,8 @@ interface FeedbackDirectionnelProps {
  * Le compte à rebours (3.0s → 0.0s) n'est affiché que quand la note est juste
  * ET que la stabilisation est en cours (progression > 0).
  *
- * @param props.evaluation - Résultat de l'évaluation temps réel
- * @param props.progression - Avancement du timer de 3s (0 → 1)
+ * @param evaluation - Résultat de l'évaluation temps réel
+ * @param progression - Avancement du timer de 3s (0 → 1)
  *
  * @example
  * <FeedbackDirectionnel evaluation="juste" progression={0.5} />

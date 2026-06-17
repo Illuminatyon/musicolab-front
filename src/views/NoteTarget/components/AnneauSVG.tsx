@@ -40,9 +40,9 @@ const CIRCONFERENCE = 2 * Math.PI * RAYON;
 /**
  * Anneau SVG de progression circulaire.
  *
- * @param props.progression - Avancement de 0 à 1
- * @param props.actif - Contrôle la visibilité de l'anneau
- * @param props.children - Contenu centré dans l'anneau
+ * @param progression - Avancement de 0 à 1
+ * @param actif - Contrôle la visibilité de l'anneau
+ * @param children - Contenu centré dans l'anneau
  *
  * @example
  * <AnneauSVG progression={0.5} actif={true}>

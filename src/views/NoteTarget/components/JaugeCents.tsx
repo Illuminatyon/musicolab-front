@@ -35,8 +35,8 @@ interface JaugeCentsProps {
  * -   0¢ → 50% (centre)
  * - +50¢ → 100% (extrême droite)
  *
- * @param props.ecartCents - Écart mesuré en cents
- * @param props.evaluation - Pour coloriser le curseur (vert si juste, rouge sinon)
+ * @param ecartCents - Écart mesuré en cents
+ * @param evaluation - Pour coloriser le curseur (vert si juste, rouge sinon)
  *
  * @example
  * <JaugeCents ecartCents={-15} evaluation="juste" />
