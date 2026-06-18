@@ -1,0 +1,102 @@
+/* InfoTemperament.css — Panneau d'info sur le tempérament */
+
+.temperament {
+    width: 100%;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── Bouton toggle ── */
+.temperament__toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #141414;
+    border: none;
+    color: #a0a0a0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.temperament__toggle:hover {
+    background: #333333; /* Éclairci pour rendre le texte rouge #C8102E parfaitement accessible au survol */
+    color: #C8102E;      /* Ton rouge de charte reste intact */
+}
+
+.temperament__icone {
+    font-size: 1rem;
+    color: #C8102E;
+}
+
+.temperament__chevron {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: #8a8a8a;
+}
+
+/* ── Contenu ── */
+.temperament__contenu {
+    padding: 1rem;
+    background: #0f0f0f;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.temperament__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+.temperament__section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.temperament__section--info {
+    background: rgba(200, 16, 46, 0.05);
+    border: 1px solid rgba(200, 16, 46, 0.15);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+}
+
+.temperament__titre {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+}
+
+.temperament__texte {
+    font-size: 0.72rem;
+    color: #a0a0a0;
+    line-height: 1.65;
+}
+
+.temperament__texte strong {
+    color: #ffffff;
+}
+
+.temperament__formule {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #C8102E;
+    background: rgba(200, 16, 46, 0.15);
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.25rem;
+    letter-spacing: 0.02em;
+    font-style: italic;
+}

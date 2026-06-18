@@ -15,10 +15,8 @@ export default function App() {
             <Routes>
                 {/* Page d'accueil — sélection des modules */}
                 <Route path="/"          element={<Home />} />
-
                 {/* Module 3 — Évaluation de la justesse vocale */}
                 <Route path="/module/3"  element={<PitchDetector />} />
-
                 {/* Les autres modules seront ajoutés par les autres membres */}
                 {/* <Route path="/module/1" element={<MidiTranspose />} /> */}
                 {/* <Route path="/module/2" element={<RhythmCircle />} /> */}

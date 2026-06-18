@@ -27,8 +27,6 @@ import {
 } from "../models/noteModel.ts";
 import { useStabilisation } from "./useStabilisation.ts";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
 /** Durée d'affichage de l'overlay "Note validée !" en ms */
 const DUREE_FEEDBACK_VALIDE_MS = 1_000;
 
@@ -38,18 +36,30 @@ const NOMBRE_NOTES_DEFAUT = 5;
 /** Octave par défaut pour notesDisponibles (utilisée dans useNoteSession) */
 const OCTAVE_DEFAUT = 4;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 /**
  * Phase courante de la session d'évaluation.
+ *
+ * Valeurs possibles :
  * - `"configuration"` : écran de configuration initial
  * - `"en_cours"`      : session active, note en attente d'évaluation
  * - `"terminee"`      : toutes les notes ont été évaluées, bilan disponible
+ *
+ * @remarks
+ * Le type est exporté pour permettre aux consommants (vues/components)
+ * d'afficher une UI différente selon la phase.
  */
 export type PhaseSession = "configuration" | "en_cours" | "terminee";
 
 /**
  * Interface complète retournée par le hook useNoteSession.
+ */
+
+/**
+ * Interface publique exposée par `useNoteSession`.
+ *
+ * Chaque propriété est documentée afin que l'IDE propose des informations
+ * d'auto-complétion et d'inline-help lors de l'utilisation du hook.
  */
 export interface UseNoteSessionRetour {
     /** Phase actuelle de la session */
@@ -91,26 +101,30 @@ export interface UseNoteSessionRetour {
     mettreAJourFrequence: (frequenceHz: number | null) => void;
 }
 
-// ─── Hook ────────────────────────────────────────────────────────────────────
-
 /**
  * Hook de gestion d'une session d'évaluation vocale.
  *
- * S'utilise conjointement avec usePitchDetection :
+ * Usage : s'utilise avec `usePitchDetection` — on appelle `mettreAJourFrequence`
+ * à chaque frame détectée (≈60fps) pour alimenter le contrôleur de session.
+ *
+ * Exemple :
  * ```tsx
  * const { frequenceHz } = usePitchDetection();
- * const { mettreAJourFrequence, noteCourante } = useNoteSession();
- *
+ * const { phase, mettreAJourFrequence } = useNoteSession();
  * useEffect(() => {
  *   if (phase === "en_cours") mettreAJourFrequence(frequenceHz);
  * }, [frequenceHz]);
  * ```
  *
- * @returns État complet de la session et actions de contrôle
+ * Remarks:
+ * - Le hook expose des refs et callbacks stables afin d'éviter les
+ *   re-créations lors des re-renders (important pour les timers/intervals).
+ * - La logique de "stabilisation" (timer 3s) est déléguée à `useStabilisation`.
+ *
+ * @returns {UseNoteSessionRetour} Objet contenant l'état public de la session
+ * et les actions (démarrer, skip, réinitialiser, mettreAJourFrequence).
  */
 export function useNoteSession(): UseNoteSessionRetour {
-
-    // ── État React ────────────────────────────────────────────────────────────
 
     const [phase, setPhase]               = useState<PhaseSession>("configuration");
     const [indexNote, setIndexNote]       = useState(0);
@@ -118,11 +132,10 @@ export function useNoteSession(): UseNoteSessionRetour {
     const [notesSession, setNotesSession] = useState<Note[]>([]);
     const [resultats, setResultats]       = useState<ResultatNote[]>([]);
     const [bilan, setBilan]               = useState<BilanSession | null>(null);
-    const [evaluationTempsReel, setEvaluation] = useState<EvaluationJustesse | null>(null);
-    const [ecartCentsTempsReel, setEcart]      = useState<number | null>(null);
+    const [evaluationTempsReel, setEvaluationTempsReel] = useState<EvaluationJustesse | null>(null);
+    const [ecartCentsTempsReel, setEcartCentsTempsReel] = useState<number | null>(null);
     const [noteValidee, setNoteValidee]        = useState(false);
 
-    // ── Refs miroirs ──────────────────────────────────────────────────────────
     // Permettent d'accéder à l'état courant depuis les callbacks (setInterval,
     // setTimeout) sans créer de dépendances instables dans useCallback.
     // Synchronisées après chaque render via useLayoutEffect (synchrone).
@@ -150,13 +163,9 @@ export function useNoteSession(): UseNoteSessionRetour {
     const notesDisponibles = getNotesOctave(OCTAVE_DEFAUT);
     const noteCourante     = phase === "en_cours" ? notesSession[indexNote] ?? null : null;
 
-    // ── Nettoyage au démontage ────────────────────────────────────────────────
-
     useEffect(() => {
         return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
     }, []);
-
-    // ── Validation ────────────────────────────────────────────────────────────
 
     /**
      * Enregistre le résultat de la note courante et avance à la suivante.
@@ -172,6 +181,7 @@ export function useNoteSession(): UseNoteSessionRetour {
      * @param evaluation - Évaluation de la note
      * @param ecart - Écart en cents, ou null si skip
      */
+
     const validerNote = useCallback(
         (freq: number | null, evaluation: EvaluationJustesse, ecart: number | null): void => {
             const noteActuelle = notesRef.current[indexRef.current];
@@ -180,7 +190,7 @@ export function useNoteSession(): UseNoteSessionRetour {
             const resultat: ResultatNote = {
                 noteCible: noteActuelle,
                 frequenceDetectee: freq,
-                ecartCents: ecart !== null ? Math.round(ecart) : null,
+                ecartCents: ecart == null ? null : Math.round(ecart),
                 evaluation,
             };
             const nouveaux = [...resultatsRef.current, resultat];
@@ -205,8 +215,8 @@ export function useNoteSession(): UseNoteSessionRetour {
                     // Note suivante
                     setIndexNote((i) => i + 1);
                 }
-                setEvaluation(null);
-                setEcart(null);
+                setEvaluationTempsReel(null);
+                setEcartCentsTempsReel(null);
             }, delai);
         },
         []
@@ -216,12 +226,11 @@ export function useNoteSession(): UseNoteSessionRetour {
     const validerNoteRef = useRef(validerNote);
     useLayoutEffect(() => { validerNoteRef.current = validerNote; });
 
-    // ── Délégation à useStabilisation ────────────────────────────────────────
-
     /**
      * Callback appelé par useStabilisation quand les 3s de stabilisation sont écoulées.
      * Vérifie une dernière fois que la voix est toujours juste avant de valider.
      */
+
     const handleValide = useCallback((): void => {
         const freq = frequenceRef.current;
         const note = notesRef.current[indexRef.current];
@@ -239,8 +248,6 @@ export function useNoteSession(): UseNoteSessionRetour {
         arreter: arreterStab,
     } = useStabilisation({ onValide: handleValide });
 
-    // ── Mise à jour de la fréquence ───────────────────────────────────────────
-
     /**
      * Reçoit la fréquence détectée à chaque frame (~60 fps) depuis usePitchDetection.
      *
@@ -251,6 +258,7 @@ export function useNoteSession(): UseNoteSessionRetour {
      *
      * @param frequenceHz - Fréquence en Hz ou null si silence
      */
+
     const mettreAJourFrequence = useCallback(
         (frequenceHz: number | null): void => {
             frequenceRef.current = frequenceHz;
@@ -261,11 +269,11 @@ export function useNoteSession(): UseNoteSessionRetour {
             if (!note) return;
 
             const evaluation = evaluerJustesse(frequenceHz, note);
-            setEvaluation(evaluation);
-            setEcart(
-                frequenceHz !== null
-                    ? Math.round(calculerEcartCents(frequenceHz, note))
-                    : null
+            setEvaluationTempsReel(evaluation);
+            setEcartCentsTempsReel(
+                frequenceHz == null
+                    ? null
+                    : Math.round(calculerEcartCents(frequenceHz, note))
             );
 
             if (evaluation !== derniereEvalRef.current) {
@@ -276,19 +284,18 @@ export function useNoteSession(): UseNoteSessionRetour {
         [demarrerStab, arreterStab]
     );
 
-    // ── Actions ───────────────────────────────────────────────────────────────
-
     /**
      * Réinitialise tous les états et refs partagés entre demarrerSession et reinitialiser.
      * Factorisée pour éviter la duplication de code (DRY).
      */
+
     const reinitialiserEtatCommun = useCallback((): void => {
         arreterStab();
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         setResultats([]);
         setBilan(null);
-        setEvaluation(null);
-        setEcart(null);
+        setEvaluationTempsReel(null);
+        setEcartCentsTempsReel(null);
         setNoteValidee(false);
         noteValideeRef.current  = false;
         derniereEvalRef.current = null;
@@ -304,6 +311,7 @@ export function useNoteSession(): UseNoteSessionRetour {
      * @param notesChoisies - Notes sélectionnées en configuration
      * @param nombreNotes - Nombre total de notes souhaitées pour la session
      */
+
     const demarrerSession = useCallback(
         (notesChoisies: Note[], nombreNotes: number): void => {
             if (!notesChoisies.length) return;
@@ -345,8 +353,6 @@ export function useNoteSession(): UseNoteSessionRetour {
         setTotalNotes(NOMBRE_NOTES_DEFAUT);
         setNotesSession([]);
     }, [reinitialiserEtatCommun]);
-
-    // ── Retour ────────────────────────────────────────────────────────────────
 
     return {
         phase, noteCourante, indexNote, totalNotes,

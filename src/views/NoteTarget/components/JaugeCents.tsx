@@ -14,16 +14,12 @@
 
 import type { EvaluationJustesse } from "../../../models/noteModel.ts";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface JaugeCentsProps {
     /** Écart en cents entre la voix et la note cible. Null si silence. */
     ecartCents: number | null;
     /** Évaluation courante — détermine la couleur du curseur */
     evaluation: EvaluationJustesse | null;
 }
-
-// ─── Composant ────────────────────────────────────────────────────────────────
 
 /**
  * Jauge linéaire de justesse en cents (-50¢ à +50¢).
@@ -42,7 +38,7 @@ interface JaugeCentsProps {
  * <JaugeCents ecartCents={-15} evaluation="juste" />
  * // Curseur vert légèrement à gauche du centre
  */
-export default function JaugeCents({ ecartCents, evaluation }: JaugeCentsProps) {
+export default function JaugeCents({ ecartCents, evaluation }: Readonly<JaugeCentsProps>) {
     /**
      * Calcule la position du curseur en pourcentage (0% = gauche, 100% = droite).
      * Clamp l'écart entre -50 et +50 pour éviter que le curseur sorte de la jauge.

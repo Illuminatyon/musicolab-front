@@ -18,18 +18,18 @@
 
 import * as Pitchfinder from "pitchfinder";
 
-// ─── Constantes audio ─────────────────────────────────────────────────────────
-
 /**
  * Taille du buffer d'analyse en échantillons.
  * 2048 samples à 44 100 Hz ≈ 46 ms de latence — bon compromis précision/réactivité.
  */
+
 const BUFFER_SIZE = 2048;
 
 /**
  * Fréquence d'échantillonnage cible en Hz.
  * 44 100 Hz est la norme CD audio, supportée universellement.
  */
+
 const SAMPLE_RATE = 44_100;
 
 /**
@@ -37,6 +37,7 @@ const SAMPLE_RATE = 44_100;
  * 80 Hz correspond à la voix de basse la plus grave.
  * En dessous, on considère que c'est du bruit ou un artefact.
  */
+
 const FREQ_MIN = 80;
 
 /**
@@ -44,14 +45,14 @@ const FREQ_MIN = 80;
  * 1 050 Hz correspond à la voix de soprano la plus aiguë.
  * Au-dessus, on considère que c'est du sifflement ou du bruit.
  */
-const FREQ_MAX = 1_050;
 
-// ─── Interfaces et types ──────────────────────────────────────────────────────
+const FREQ_MAX = 1_050;
 
 /**
  * Contient toutes les ressources Web Audio API d'une session active.
  * Doit être conservé en mémoire pour pouvoir les libérer correctement.
  */
+
 export interface SessionAudio {
     /** Contexte audio principal — point d'entrée de la Web Audio API */
     contexte: AudioContext;
@@ -68,9 +69,8 @@ export interface SessionAudio {
  *
  * @param frequenceHz - Fréquence détectée en Hz, ou null si silence/hors plage
  */
-export type CallbackPitch = (frequenceHz: number | null) => void;
 
-// ─── Initialisation du pipeline audio ────────────────────────────────────────
+export type CallbackPitch = (frequenceHz: number | null) => void;
 
 /**
  * Demande l'accès au microphone et initialise le pipeline Web Audio API.
@@ -117,8 +117,6 @@ export async function initialiserAudio(): Promise<SessionAudio> {
     return { contexte, source, analyser, stream };
 }
 
-// ─── Détection de pitch ───────────────────────────────────────────────────────
-
 /**
  * Crée et retourne un détecteur de pitch configuré avec l'algorithme YIN.
  *
@@ -132,6 +130,7 @@ export async function initialiserAudio(): Promise<SessionAudio> {
  *
  * @returns Fonction de détection prête à l'emploi (Float32Array → Hz | null)
  */
+
 export function creerDetecteurPitch(): (buffer: Float32Array<ArrayBuffer>) => number | null {
     return Pitchfinder.YIN({
         sampleRate: SAMPLE_RATE,
@@ -222,8 +221,6 @@ export async function libererAudio(session: SessionAudio): Promise<void> {
     session.source.disconnect();
     await session.contexte.close();
 }
-
-// ─── Lecture de note de référence ────────────────────────────────────────────
 
 /**
  * Joue une note de référence via un oscillateur sinusoïdal.

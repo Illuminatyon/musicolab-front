@@ -1,5 +1,13 @@
 /* PitchDetector.css — Charte IUT Montreuil : noir / blanc / rouge #C8102E */
 
+/*
+ * Corrections d'accessibilité WCAG AA (SonarQube S7924) :
+ * - .badge          : #C8102E → #FF6B84  (rouge clair, ratio 6.7:1)
+ * - .note-item__ecoute:hover : #C8102E → #fff (ratio >10:1)
+ * - .pitch-detector__erreur  : #C8102E → #FF8093 (ratio 5.2:1)
+ * - .config__info--bemol     : #6a6a6a → #909090 (ratio 6.1:1)
+ */
+
 .pitch-detector {
     display: flex; flex-direction: column; align-items: center;
     gap: 2rem; min-height: 100vh; padding: 2rem 1rem;
@@ -8,7 +16,8 @@
 
 /* ── Header ── */
 .pitch-detector__header { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
-.badge { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(200,16,46,0.15); color: #C8102E; border: 1px solid rgba(200,16,46,0.3); border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Courier New', monospace; }
+/* FIX S7924 — #C8102E sur fond rgba(200,16,46,0.15) = ratio ~3.0 → remplacé par #FF6B84 = ratio ~6.7 */
+.badge { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(200,16,46,0.15); color: #FF6B84; border: 1px solid rgba(200,16,46,0.3); border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Courier New', monospace; }
 .titre { font-size: 2rem; font-weight: 900; color: #fff; font-family: 'Courier New', monospace; }
 .sous-titre { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
 
@@ -40,12 +49,14 @@
 .note-item__select sub { font-size: 0.6rem; color: #a0a0a0; }
 .note-item--actif .note-item__select sub { color: #C8102E; }
 
+/* FIX S7924 — #C8102E sur fond rgba(200,16,46,0.15) = ratio ~3.0 → remplacé par #fff = ratio >10:1 */
 .note-item__ecoute { padding: 0 0.5rem; background: transparent; border: none; border-left: 1px solid #2a2a2a; color: #a0a0a0; font-size: 0.6rem; cursor: pointer; transition: all 0.15s ease; }
-.note-item__ecoute:hover { background: rgba(200,16,46,0.15); color: #C8102E; }
+.note-item__ecoute:hover { background: rgba(200,16,46,0.15); color: #fff; }
 .note-item--actif .note-item__ecoute { border-left-color: rgba(200,16,46,0.3); }
 
 /* ── Erreur ── */
-.pitch-detector__erreur { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.3); border-radius: 0.5rem; color: #C8102E; font-size: 0.875rem; font-family: 'Courier New', monospace; width: 100%; }
+/* FIX S7924 — #C8102E sur fond rgba(200,16,46,0.1) = ratio ~3.1 → remplacé par #FF8093 = ratio ~5.2 */
+.pitch-detector__erreur { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.3); border-radius: 0.5rem; color: #FF8093; font-size: 0.875rem; font-family: 'Courier New', monospace; width: 100%; }
 
 /* ── Boutons ── */
 .pitch-detector__btn-principal { width: 100%; max-width: 480px; padding: 1rem; background: #C8102E; color: #fff; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: none; border-radius: 0.5rem; cursor: pointer; font-family: 'Courier New', monospace; transition: background 0.2s ease; }
@@ -82,4 +93,81 @@
     .titre { font-size: 1.75rem; }
     .config__btn { width: 48px; height: 48px; font-size: 1rem; }
     .config__grille { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Compteur de notes ── */
+.config__compteur {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.config__compteur-btn {
+    width: 44px;
+    height: 44px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+    color: #a0a0a0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.config__compteur-btn:hover:not(:disabled) {
+    border-color: #C8102E;
+    color: #ffffff;
+}
+
+.config__compteur-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.config__compteur-input {
+    width: 72px;
+    height: 44px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.config__compteur-input:focus {
+    border-color: #C8102E;
+}
+
+.config__compteur-input::-webkit-outer-spin-button,
+.config__compteur-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.config__compteur-input[type=number] { -moz-appearance: textfield; }
+
+/* ── Info bémol ── */
+/* FIX S7924 — #6a6a6a sur fond sombre = ratio ~4.1 → remplacé par #909090 = ratio ~6.1 */
+.config__info--bemol {
+    color: #909090;
+    font-style: italic;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+/* ── Toggle ♯/♭ actif ── */
+.config__btn-sm--actif {
+    border-color: #C8102E;
+    color: #C8102E;
+    background: rgba(200, 16, 46, 0.08);
 }

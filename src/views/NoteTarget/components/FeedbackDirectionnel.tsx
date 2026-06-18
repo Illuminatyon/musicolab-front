@@ -10,9 +10,6 @@
  */
 
 import type { EvaluationJustesse } from "../../../models/noteModel.ts";
-
-// ─── Configuration d'affichage ────────────────────────────────────────────────
-
 /**
  * Mapping évaluation → données d'affichage.
  * Centralisé ici pour éviter la duplication entre composants.
@@ -27,16 +24,12 @@ const FEEDBACK_CONFIG: Record<
     silence:   { label: "Silence",   emoji: "…", classe: "feedback--silence"   },
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface FeedbackDirectionnelProps {
     /** Évaluation courante de la voix (null si session non démarrée) */
     evaluation: EvaluationJustesse | null;
     /** Progression de stabilisation entre 0 et 1 — déclenche le compte à rebours */
     progression: number;
 }
-
-// ─── Composant ────────────────────────────────────────────────────────────────
 
 /**
  * Bloc de feedback directionnel : emoji + label textuel + compte à rebours.
@@ -54,7 +47,7 @@ interface FeedbackDirectionnelProps {
 export default function FeedbackDirectionnel({
                                                  evaluation,
                                                  progression,
-                                             }: FeedbackDirectionnelProps) {
+                                             }: Readonly<FeedbackDirectionnelProps>) {
     const fb = evaluation ? FEEDBACK_CONFIG[evaluation] : null;
 
     // Le compte à rebours n'est visible que pendant la stabilisation d'une note juste

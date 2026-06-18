@@ -18,8 +18,6 @@ import "./ResultsSummary.css";
 import LigneResultat from "./components/LigneResultat.tsx";
 import type { BilanSession } from "../../models/noteModel.ts";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ResultsSummaryProps {
     /** Bilan complet généré par genererBilan() dans useNoteSession */
     bilan: BilanSession;
@@ -27,15 +25,13 @@ interface ResultsSummaryProps {
     onRecommencer: () => void;
 }
 
-// ─── Composant ────────────────────────────────────────────────────────────────
-
 /**
  * Bilan de fin de session d'évaluation vocale.
  *
  * @param bilan - Données de bilan calculées par le Model
  * @param onRecommencer - Action de retour à la configuration
  */
-export default function ResultsSummary({ bilan, onRecommencer }: ResultsSummaryProps) {
+export default function ResultsSummary({ bilan, onRecommencer }: Readonly<ResultsSummaryProps>) {
 
     /**
      * Détermine la classe CSS du score selon sa valeur.
