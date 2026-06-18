@@ -20,8 +20,6 @@ import {
     type SessionAudio,
 } from "../models/pitchModel.ts";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 /**
  * Statut possible de la session de capture audio.
  * - `"inactif"`    : micro non démarré, état initial
@@ -47,8 +45,6 @@ export interface UsePitchDetectionRetour {
     arreter: () => Promise<void>;
 }
 
-// ─── Hook ────────────────────────────────────────────────────────────────────
-
 /**
  * Hook de détection de pitch en temps réel via le microphone.
  *
@@ -70,8 +66,6 @@ export interface UsePitchDetectionRetour {
  */
 export function usePitchDetection(): UsePitchDetectionRetour {
 
-    // ── État React ────────────────────────────────────────────────────────────
-
     /** Dernière fréquence détectée en Hz (null si silence) */
     const [frequenceHz, setFrequenceHz] = useState<number | null>(null);
 
@@ -81,7 +75,6 @@ export function usePitchDetection(): UsePitchDetectionRetour {
     /** Message d'erreur éventuel */
     const [erreur, setErreur] = useState<string | null>(null);
 
-    // ── Refs ──────────────────────────────────────────────────────────────────
     // useRef pour stocker les ressources audio sans déclencher de re-render
 
     /** Session audio active (AudioContext, AnalyserNode, MediaStream) */
@@ -90,8 +83,6 @@ export function usePitchDetection(): UsePitchDetectionRetour {
     /** Fonction d'arrêt de la boucle requestAnimationFrame */
     const arreterBoucleRef = useRef<(() => void) | null>(null);
 
-    // ── Nettoyage au démontage (useEffect — cours S4) ────────────────────────
-
     /**
      * Si le composant est démonté pendant une session active,
      * on libère les ressources pour éteindre le voyant microphone.
@@ -99,12 +90,18 @@ export function usePitchDetection(): UsePitchDetectionRetour {
     useEffect(() => {
         return () => {
             arreterBoucleRef.current?.();
-            if (sessionRef.current)
-                libererAudio(sessionRef.current);
+            const sessionActuelle = sessionRef.current;
+            if (sessionActuelle) {
+                void (async () => {
+                    try {
+                        await libererAudio(sessionActuelle);
+                    } catch (error) {
+                        console.error("Erreur lors de la libération de l'audio :", error);
+                    }
+                })();
+            }
         };
     }, []);
-
-    // ── Actions ───────────────────────────────────────────────────────────────
 
     /**
      * Démarre la capture microphone et la boucle d'analyse YIN.
@@ -122,6 +119,7 @@ export function usePitchDetection(): UsePitchDetectionRetour {
      *
      * @returns Promesse résolue quand le micro est actif
      */
+
     const demarrer = useCallback(async (): Promise<void> => {
         if (statut === "actif" || statut === "chargement") return;
 
@@ -161,6 +159,7 @@ export function usePitchDetection(): UsePitchDetectionRetour {
      *
      * @returns Promesse résolue quand toutes les ressources sont libérées
      */
+
     const arreter = useCallback(async (): Promise<void> => {
         arreterBoucleRef.current?.();
         arreterBoucleRef.current = null;
@@ -174,8 +173,6 @@ export function usePitchDetection(): UsePitchDetectionRetour {
         setStatut("inactif");
         setErreur(null);
     }, []);
-
-    // ── Retour ────────────────────────────────────────────────────────────────
 
     return { frequenceHz, statut, erreur, demarrer, arreter };
 }

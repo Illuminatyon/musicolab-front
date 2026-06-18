@@ -16,8 +16,6 @@
 
 import type { ReactNode } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface AnneauSVGProps {
     /** Progression entre 0 (vide) et 1 (complet) */
     progression: number;
@@ -27,15 +25,11 @@ interface AnneauSVGProps {
     children: ReactNode;
 }
 
-// ─── Constantes SVG ───────────────────────────────────────────────────────────
-
 /** Rayon du cercle SVG en unités SVG (viewBox 120×120) */
 const RAYON = 54;
 
 /** Circonférence du cercle : C = 2π × r */
 const CIRCONFERENCE = 2 * Math.PI * RAYON;
-
-// ─── Composant ────────────────────────────────────────────────────────────────
 
 /**
  * Anneau SVG de progression circulaire.
@@ -49,7 +43,7 @@ const CIRCONFERENCE = 2 * Math.PI * RAYON;
  *   <span>La4</span>
  * </AnneauSVG>
  */
-export default function AnneauSVG({ progression, actif, children }: AnneauSVGProps) {
+export default function AnneauSVG({ progression, actif, children }: Readonly<AnneauSVGProps>) {
     // Calcul de l'offset : 0 = cercle complet, CIRCONFERENCE = cercle vide
     const offset = CIRCONFERENCE * (1 - progression);
 

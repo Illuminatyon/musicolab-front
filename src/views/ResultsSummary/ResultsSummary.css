@@ -27,10 +27,10 @@
 .resultat__hz { font-size: 0.75rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
 .resultat__ecart { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; min-width: 44px; text-align: right; }
 
-.resultat__badge { font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 9999px; font-family: 'Courier New', monospace; white-space: nowrap; }
-.badge--juste   { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3);  }
-.badge--erreur  { background: rgba(200,16,46,0.15);  color: #C8102E; border: 1px solid rgba(200,16,46,0.3);  }
-.badge--silence { background: rgba(160,160,160,0.1); color: #a0a0a0; border: 1px solid rgba(160,160,160,0.2); }
+.resultat__badge { font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 9999px; font-family: 'Courier New', monospace; white-space: nowrap; }
+.badge--juste   { background: rgba(34,197,94,0.22);  color: #22c55e; border: 1px solid rgba(34,197,94,0.4);  }
+.badge--erreur  { background: rgba(200,16,46,0.22);  color: #C8102E; border: 1px solid rgba(200,16,46,0.4);  }
+.badge--silence { background: rgba(160,160,160,0.18); color: #a0a0a0; border: 1px solid rgba(160,160,160,0.3); }
 
 .results__btn { width: 100%; padding: 0.875rem; background: #C8102E; color: #fff; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: none; border-radius: 0.5rem; cursor: pointer; font-family: 'Courier New', monospace; transition: background 0.2s ease; }
 .results__btn:hover { background: #e8213f; }

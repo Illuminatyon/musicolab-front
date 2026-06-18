@@ -14,8 +14,6 @@
 
 import type { ResultatNote, EvaluationJustesse } from "../../../models/noteModel.ts";
 
-// ─── Configuration d'affichage ────────────────────────────────────────────────
-
 /** Labels affichés dans le badge selon l'évaluation */
 const LABEL: Record<EvaluationJustesse, string> = {
     juste:     "Juste ✓",
@@ -32,8 +30,6 @@ const CLASSE: Record<EvaluationJustesse, string> = {
     silence:   "badge--silence",
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface LigneResultatProps {
     /** Résultat complet de la tentative sur cette note */
     resultat: ResultatNote;
@@ -41,7 +37,7 @@ interface LigneResultatProps {
     index: number;
 }
 
-// ─── Composant ────────────────────────────────────────────────────────────────
+
 
 /**
  * Ligne individuelle du tableau de bilan de session.
@@ -56,7 +52,7 @@ interface LigneResultatProps {
  * />
  * // Affiche : "1  La₄  440.0 Hz  -8¢  Juste ✓"
  */
-export default function LigneResultat({ resultat, index }: LigneResultatProps) {
+export default function LigneResultat({ resultat, index }: Readonly<LigneResultatProps>) {
     return (
         <div className="resultat">
 

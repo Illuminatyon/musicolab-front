@@ -15,19 +15,16 @@
 
 import { useState, useLayoutEffect, useRef, useCallback, useEffect } from "react";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
 /** Durée de stabilisation requise avant validation automatique (ms) */
 const DUREE_STABILISATION_MS = 3_000;
 
 /** Intervalle de mise à jour de la progression — 50ms = 20 updates/seconde */
 const INTERVALLE_MS = 50;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 /**
  * Options de configuration du hook useStabilisation.
  */
+
 interface UseStabilisationOptions {
     /**
      * Callback appelé exactement une fois quand les 3 secondes sont écoulées.
@@ -48,8 +45,6 @@ export interface UseStabilisationRetour {
     /** Arrête et réinitialise le timer — appeler quand l'évaluation change */
     arreter: () => void;
 }
-
-// ─── Hook ────────────────────────────────────────────────────────────────────
 
 /**
  * Hook de stabilisation temporelle pour la validation vocale.
@@ -89,6 +84,7 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
      * Mise à jour via useLayoutEffect pour éviter les closures périmées
      * sans avoir à re-créer le setInterval à chaque render.
      */
+
     const onValideRef = useRef(onValide);
     useLayoutEffect(() => {
         onValideRef.current = onValide;
@@ -105,6 +101,7 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
      * Arrête le timer et réinitialise la progression à 0.
      * Appelée quand l'évaluation change (voix décroche de la note juste).
      */
+
     const arreter = useCallback((): void => {
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -121,6 +118,7 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
      * Le setInterval vérifie toutes les 50ms si les 3s sont écoulées.
      * Quand c'est le cas, il s'arrête lui-même et appelle onValide.
      */
+
     const demarrer = useCallback((): void => {
         if (intervalRef.current) return; // déjà en cours
 
@@ -138,7 +136,7 @@ export function useStabilisation({ onValide }: UseStabilisationOptions): UseStab
                 intervalRef.current = null;
                 debutRef.current    = null;
                 setProgression(0);
-                onValideRef.current(); // ✅ déclenche la validation dans useNoteSession
+                onValideRef.current(); // déclenche la validation dans useNoteSession
             }
         }, INTERVALLE_MS);
     }, []);

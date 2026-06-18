@@ -51,9 +51,8 @@ html, body, #root {
 .home__badge {
     display: inline-block;
     padding: 0.3rem 0.875rem;
-    background: rgba(200, 16, 46, 0.12);
-    color: #C8102E;
-    border: 1px solid rgba(200, 16, 46, 0.25);
+    background: #C8102E;
+    color: #ffffff;
     border-radius: 9999px;
     font-size: 0.65rem;
     font-weight: 700;
@@ -76,7 +75,7 @@ html, body, #root {
 
 .home__desc {
     font-size: 0.85rem;
-    color: #6a6a6a;
+    color: #a0a0a0;
     line-height: 1.7;
 }
 
@@ -92,7 +91,7 @@ html, body, #root {
     border: 1px solid #2a2a2a;
     border-radius: 0.375rem;
     font-size: 0.65rem;
-    color: #6a6a6a;
+    color: #a0a0a0;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -150,6 +149,10 @@ html, body, #root {
     border-radius: 0.875rem;
     transition: all 0.2s ease;
     min-height: 220px;
+
+    text-align: left;        /* Aligne tout le contenu textuel vers la gauche */
+    font-family: inherit;     /* Force le bouton à utiliser la police 'Courier New', monospace de .home */
+    align-items: stretch;     /* Force les enfants (comme le footer) à prendre toute la largeur */
 }
 
 .card--actif {

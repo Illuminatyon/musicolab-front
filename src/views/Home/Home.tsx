@@ -86,34 +86,39 @@ export default function Home() {
                 <p className="home__modules-titre">Choisissez un module</p>
 
                 <div className="home__grille">
-                    {MODULES.map((module) => (
-                        <article
-                            key={module.numero}
-                            className={`card ${module.route ? "card--actif" : "card--indispo"}`}
-                            onClick={() => module.route && navigate(module.route)}
-                            role={module.route ? "button" : undefined}
-                            tabIndex={module.route ? 0 : undefined}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && module.route) navigate(module.route);
-                            }}
-                        >
-                            <div className="card__header">
-                                <span className="card__numero">Module {module.numero}</span>
-                                <span className={`card__dot ${module.route ? "dot--vert" : "dot--gris"}`} />
-                            </div>
+                    {MODULES.map((module) => {
+                        const estActif = !!module.route;
 
-                            <span className="card__emoji">{module.emoji}</span>
-                            <h2 className="card__titre">{module.titre}</h2>
-                            <p className="card__desc">{module.description}</p>
+                        // Si le module est actif, on utilise un <button> natif (parfait pour l'accessibilité clavier/audio)
+                        // Si indisponible, on l'affiche dans une simple <div> sans aucune interaction possible.
+                        const ConteneurCard = estActif ? "button" : "div";
 
-                            <div className="card__footer">
-                                <span className={module.route ? "card__statut--dispo" : "card__statut--indispo"}>
-                                    {module.route ? "Disponible" : "Bientôt disponible"}
-                                </span>
-                                {module.route && <span className="card__fleche">→</span>}
-                            </div>
-                        </article>
-                    ))}
+                        return (
+                            <ConteneurCard
+                                key={module.numero}
+                                className={`card ${estActif ? "card--actif" : "card--indispo"}`}
+                                onClick={() => module.route && navigate(module.route)}
+                                type={estActif ? "button" : undefined}
+                                aria-label={estActif ? `Ouvrir le module ${module.numero} : ${module.titre}` : undefined}
+                            >
+                                <div className="card__header">
+                                    <span className="card__numero">Module {module.numero}</span>
+                                    <span className={`card__dot ${estActif ? "dot--vert" : "dot--gris"}`} />
+                                </div>
+
+                                <span className="card__emoji" role="img" aria-hidden="true">{module.emoji}</span>
+                                <h2 className="card__titre">{module.titre}</h2>
+                                <p className="card__desc">{module.description}</p>
+
+                                <div className="card__footer">
+                                    <span className={estActif ? "card__statut--dispo" : "card__statut--indispo"}>
+                                        {estActif ? "Disponible" : "Bientôt disponible"}
+                                    </span>
+                                    {estActif && <span className="card__fleche">→</span>}
+                                </div>
+                            </ConteneurCard>
+                        );
+                    })}
                 </div>
             </main>
 

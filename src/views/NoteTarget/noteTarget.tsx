@@ -1,20 +1,10 @@
 /**
- * @file NoteTarget.tsx
- * @description Composant View — Affichage de la note cible pendant la session.
+ * @file noteTarget.tsx
+ * @description Composant View — Note cible + feedback + piano clavier.
  *
- * Orchestre l'affichage de tous les éléments visuels de l'évaluation en cours :
- * - Overlay de validation (1s après validation)
- * - Barre de progression dans la session (note X/N)
- * - Anneau SVG de stabilisation (se remplit en 3s)
- * - Note cible avec nom, octave et fréquence
- * - Feedback directionnel (juste / trop haut / trop bas)
- * - Jauge de cents (-50¢ à +50¢)
- * - Bouton "Passer cette note"
- *
- * Ce composant est purement présentationnel (Dumb Component) :
- * toutes ses données viennent des props, aucune logique métier.
- *
- * Notions du cours : Composants + Props (S2), Rendu Conditionnel (S2)
+ * Nouveautés :
+ * - prop afficherBemols : alterne La# / Si♭ dans l'affichage
+ * - Composant PianoKeyboard intégré sous la jauge
  */
 
 import "./noteTarget.css";
@@ -22,62 +12,51 @@ import type { Note, EvaluationJustesse } from "../../models/noteModel.ts";
 import AnneauSVG            from "./components/AnneauSVG.tsx";
 import FeedbackDirectionnel from "./components/FeedbackDirectionnel.tsx";
 import JaugeCents           from "./components/JaugeCents.tsx";
+import PianoKeyboard        from "./components/PianoKeyboard.tsx";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface NoteTargetProps {
-    /** Note que l'utilisateur doit chanter */
+export interface NoteTargetProps {
     note: Note;
-    /** Index de la note courante dans la session (commence à 0) */
     indexNote: number;
-    /** Nombre total de notes dans la session */
     totalNotes: number;
-    /** Évaluation temps réel de la voix chantée */
     evaluation: EvaluationJustesse | null;
-    /** Écart en cents entre la voix et la note cible (null si silence) */
     ecartCents: number | null;
-    /** Progression de stabilisation entre 0 et 1 (fournie par useStabilisation) */
     progressionStabilisation: number;
-    /** Vrai pendant 1s après validation — affiche l'overlay de succès */
     noteValidee: boolean;
-    /** Callback pour passer la note courante sans la valider */
     onSkip: () => void;
+    /** true = afficher Si♭, false = La# */
+    afficherBemols: boolean;
 }
 
-// ─── Composant ────────────────────────────────────────────────────────────────
-
 /**
- * Composant d'affichage de la note cible et du feedback en temps réel.
+ * Affiche la note cible, le feedback temps réel et le clavier de piano.
  *
- * @param props - NoteTargetProps
- *
- * @example
- * <NoteTarget
- *   note={noteCourante}
- *   indexNote={2}
- *   totalNotes={5}
- *   evaluation="juste"
- *   ecartCents={-8}
- *   progressionStabilisation={0.4}
- *   noteValidee={false}
- *   onSkip={skipNote}
- * />
+ * @param props - Les propriétés du composant.
+ * @param props.note - Note musicale à chanter (ex: "C4", "A#3").
+ * @param props.indexNote - L'index de la note actuelle dans l'exercice.
+ * @param props.totalNotes - Le nombre total de notes à chanter dans l'exercice.
+ * @param props.evaluation - Le résultat de l'évaluation ou le statut du chant en temps réel.
+ * @param props.ecartCents - L'écart en cents par rapport à la note cible pour le retour sur la justesse.
+ * @param props.progressionStabilisation - Le niveau de progression (souvent en pourcentage) pour valider la stabilisation sur la note.
+ * @param props.noteValidee - Indique si la note actuelle a été validée avec succès.
+ * @param props.onSkip - Fonction de rappel (callback) déclenchée lorsque l'utilisateur passe la note actuelle.
+ * @param props.afficherBemols - Flag déterminant si l'affichage utilise la notation bémol (♭) ou dièse (♯).
  */
+
 export default function NoteTarget({
                                        note, indexNote, totalNotes,
                                        evaluation, ecartCents,
                                        progressionStabilisation, noteValidee,
                                        onSkip,
-                                   }: NoteTargetProps) {
+                                       afficherBemols,
+                                   }: Readonly<NoteTargetProps>) {
 
-    /** L'anneau SVG est visible uniquement quand la note est juste et le timer actif */
     const anneauActif = progressionStabilisation > 0 && evaluation === "juste";
+    const nomAffiche  = afficherBemols ? note.nomBemol : note.nom;
 
     return (
         <div className="note-target">
 
             {/* ── Overlay de validation ── */}
-            {/* Affiché pendant DUREE_FEEDBACK_VALIDE_MS (1s) après validation */}
             {noteValidee && (
                 <div className="note-target__overlay">
                     <span className="overlay__icone">✓</span>
@@ -85,11 +64,9 @@ export default function NoteTarget({
                 </div>
             )}
 
-            {/* ── Progression dans la session ── */}
+            {/* ── Progression session ── */}
             <div className="note-target__progression">
-                <span className="progression__texte">
-                    Note {indexNote + 1} / {totalNotes}
-                </span>
+                <span className="progression__texte">Note {indexNote + 1} / {totalNotes}</span>
                 <div className="progression__barre">
                     <div
                         className="progression__remplissage"
@@ -98,14 +75,12 @@ export default function NoteTarget({
                 </div>
             </div>
 
-            {/* ── Anneau SVG + note cible ── */}
+            {/* ── Anneau SVG + nom de la note ── */}
             <AnneauSVG progression={progressionStabilisation} actif={anneauActif}>
                 <div className="note-target__note">
-                    <span className="note__nom">{note.nom}</span>
+                    <span className="note__nom">{nomAffiche}</span>
                     <span className="note__octave">{note.octave}</span>
-                    <span className="note__frequence">
-                        {note.frequenceHz.toFixed(1)} Hz
-                    </span>
+                    <span className="note__frequence">{note.frequenceHz.toFixed(1)} Hz</span>
                 </div>
             </AnneauSVG>
 
@@ -118,15 +93,20 @@ export default function NoteTarget({
             {/* ── Jauge de cents ── */}
             <JaugeCents ecartCents={ecartCents} evaluation={evaluation} />
 
-            {/* Valeur numérique de l'écart */}
             {ecartCents !== null && (
                 <p className="note-target__ecart">
                     {ecartCents > 0 ? "+" : ""}{ecartCents} cents
                 </p>
             )}
 
+            {/* ── Piano clavier ── */}
+            <PianoKeyboard
+                noteCible={note}
+                octave={note.octave}
+                afficherBemols={afficherBemols}
+            />
+
             {/* ── Bouton skip ── */}
-            {/* Désactivé pendant l'overlay de validation pour éviter les conflits */}
             <button
                 className="note-target__btn-skip"
                 onClick={onSkip}
