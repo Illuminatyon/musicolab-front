@@ -8,6 +8,7 @@ import "./App.css";
 
 import Home         from "./views/Home/Home";
 import PitchDetector from "./views/PitchDetector/pitchDetector";
+import RhythmCircle from "./views/RhythmCircle/RhythmCircle.tsx";
 
 export default function App() {
     return (
@@ -15,10 +16,8 @@ export default function App() {
             <Routes>
                 {/* Page d'accueil — sélection des modules */}
                 <Route path="/"          element={<Home />} />
-
                 {/* Module 2 — Cercle de rythme interactif */}
                 <Route path="/module/2"  element={<RhythmCircle />} />
-
                 {/* Module 3 — Évaluation de la justesse vocale */}
                 <Route path="/module/3"  element={<PitchDetector />} />
 
