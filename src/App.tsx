@@ -10,6 +10,7 @@ import Home         from "./views/Home/Home";
 import PitchDetector from "./views/PitchDetector/pitchDetector";
 import RhythmCircle from "./views/RhythmCircle/RhythmCircle.tsx";
 import AudioVisualizer from "./views/AudioVisualizer/audioVisualizer.tsx";
+import MidiTranspose from "./views/MidiTranspose/midiTranspose.tsx";
 
 export default function App() {
     return (
@@ -24,6 +25,7 @@ export default function App() {
 
                 {/* Module 4 */}
                 <Route path="/module/4"  element={< AudioVisualizer/>} />
+                <Route path="/module/1" element={<MidiTranspose />} />
             </Routes>
         </BrowserRouter>
     );
