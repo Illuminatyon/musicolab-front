@@ -19,7 +19,7 @@ const MODULES: ModuleConfig[] = [
         numero: 1,
         titre: "Transposition MIDI",
         description: "Chargez un fichier MIDI, choisissez un intervalle en demi-tons et téléchargez le fichier transposé.",
-        route: null,
+        route: "module/1",
         emoji: "🎹",
     },
     {
