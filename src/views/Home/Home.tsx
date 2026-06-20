@@ -40,7 +40,7 @@ const MODULES: ModuleConfig[] = [
         numero: 4,
         titre: "Visualisation Audio",
         description: "Chargez un fichier audio et visualisez sa forme d'onde, son spectre fréquentiel et ses métadonnées.",
-        route: null,
+        route: "/module/4",
         emoji: "🎵",
     },
 ];

@@ -9,6 +9,7 @@ import "./App.css";
 import Home         from "./views/Home/Home";
 import PitchDetector from "./views/PitchDetector/pitchDetector";
 import RhythmCircle from "./views/RhythmCircle/RhythmCircle.tsx";
+import AudioVisualizer from "./views/AudioVisualizer/audioVisualizer.tsx";
 
 export default function App() {
     return (
@@ -21,10 +22,8 @@ export default function App() {
                 {/* Module 3 — Évaluation de la justesse vocale */}
                 <Route path="/module/3"  element={<PitchDetector />} />
 
-                {/* Les autres modules seront ajoutés par les autres membres */}
-                {/* <Route path="/module/1" element={<MidiTranspose />} /> */}
-                {/* <Route path="/module/2" element={<RhythmCircle />} /> */}
-                {/* <Route path="/module/4" element={<AudioVisualizer />} /> */}
+                {/* Module 4 */}
+                <Route path="/module/4"  element={< AudioVisualizer/>} />
             </Routes>
         </BrowserRouter>
     );
