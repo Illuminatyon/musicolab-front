@@ -1,8 +1,6 @@
 /**
- * AudioVisualizer.tsx — couche View, Smart Component (MVC)
- * Module 4 : chargement d'un fichier audio, affichage des métadonnées,
- * waveform et spectre fréquentiel sur canvas.
- * Notions du cours : useRef (S4), useEffect (S4), Custom Hook (S5)
+ * AudioVisualizer.tsx : couche View, Smart Component (MVC)
+ * waveform et spectre.
  */
 
 import { useRef, useEffect, useState } from "react";
@@ -48,7 +46,6 @@ export default function AudioVisualizer() {
                 <p className="sous-titre">Analysez la forme d'onde et le spectre de votre fichier</p>
             </header>
 
-            {/* ── Zone de dépôt ── */}
             <div
                 className={classeDropzone}
                 onDrop={(e) => {
@@ -122,7 +119,6 @@ export default function AudioVisualizer() {
             {analyse && (
                 <div className="audio-visualizer__resultats">
 
-                    {/* Métadonnées */}
                     <div className="meta">
                         <div className="meta__item">
                             <span className="meta__label">Durée</span>
@@ -145,8 +141,6 @@ export default function AudioVisualizer() {
                             </span>
                         </div>
                     </div>
-
-                    {/* Waveform */}
                     <div className="canvas-section">
                         <h2 className="canvas-section__titre">Forme d'onde</h2>
                         <canvas
@@ -158,7 +152,6 @@ export default function AudioVisualizer() {
                         />
                     </div>
 
-                    {/* Spectre */}
                     <div className="canvas-section">
                         <h2 className="canvas-section__titre">Spectre fréquentiel moyen</h2>
                         <canvas

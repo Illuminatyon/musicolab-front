@@ -1,7 +1,6 @@
 /**
- * audioModel.ts — couche Model (MVC)
- * Types et utilitaires pour l'analyse audio : appel API, dessin waveform/spectre.
- * Aucune dépendance React.
+ * audioModel.ts : couche Model (MVC)
+ * appel API, dessin waveform/spectre.
  */
 
 const API_URL = "http://localhost:5000/analyse";
@@ -41,8 +40,7 @@ export function dessinerWaveform(canvas: HTMLCanvasElement, waveform: number[]):
 
     ctx.fillStyle = "#141414";
     ctx.fillRect(0, 0, width, height);
-
-    // Ligne centrale
+    //ligne au milieu << ICI
     ctx.strokeStyle = "#2a2a2a";
     ctx.lineWidth = 1;
     ctx.beginPath();
