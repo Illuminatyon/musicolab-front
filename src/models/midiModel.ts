@@ -1,6 +1,14 @@
 /**
  * @file midiModel.ts
- * @description Couche Model (MVC) — Communication API pour le Module 1
+ * @description Couche Model (MVC) — Communication API pour le Module 1.
+ *
+ * Responsabilité unique : gérer les appels réseau vers le serveur Flask
+ * pour la transposition des fichiers MIDI.
+ * * Choix technique :
+ * - Indépendant de React : ne contient aucun hook, c'est une fonction pure asynchrone.
+ * - Utilisation de `FormData` pour l'envoi "multipart/form-data" du fichier physique.
+ * - Retourne directement un `Blob` (binaire) pour éviter de stocker le fichier
+ * sur le serveur et respecter la consigne de non-conservation des données.
  */
 
 const API_URL = "http://localhost:5000/api/midi/transpose";
