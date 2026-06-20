@@ -158,6 +158,7 @@ Production : https://musicolab-front.vercel.app
 |--------------------------------------------|---|
 | EstebanPereira-dev                         | Module 2 — Cercle de rythme interactif |
 | Marvin Jean-Fort & Fabio Guerreiro Marques | Module 3 — Évaluation de la justesse vocale |
+| Teddy Ausousseau                           | Module 1 — Importation fichier MIDI |
 
 ---
 
