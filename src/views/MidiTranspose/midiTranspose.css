@@ -1,0 +1,39 @@
+/* midiTranspose.css — Charte IUT Montreuil */
+
+.midi-transpose { display: flex; flex-direction: column; align-items: center; gap: 2rem; min-height: 100vh; padding: 2rem 1rem; background: #0a0a0a; color: #fff; }
+.midi-transpose__header { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+
+/* Réutilisation de la Dropzone du Module 4 */
+.midi-transpose__dropzone { width: 100%; max-width: 480px; border: 2px dashed #2a2a2a; border-radius: 0.75rem; padding: 2.5rem 1.5rem; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; }
+.midi-transpose__dropzone:hover { border-color: rgba(200,16,46,0.5); background: rgba(200,16,46,0.04); }
+.midi-transpose__dropzone.dropzone--fichier { border-style: solid; border-color: #C8102E; background: rgba(200,16,46,0.06); }
+
+/* Section Transposition (Slider + Actions) */
+.midi-transpose__panel { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 480px; background: #141414; border: 1px solid #2a2a2a; border-radius: 0.75rem; padding: 1.5rem; }
+
+.panel__section-titre { font-size: 0.8rem; font-weight: 700; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Courier New', monospace; text-align: center; margin-bottom: 0.5rem; }
+
+/* Curseur inspiré de RhythmCircle */
+.slider-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.slider-valeur { font-size: 2.5rem; font-weight: 900; color: #fff; font-family: 'Courier New', monospace; line-height: 1; }
+.slider-input { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #2a2a2a; border-radius: 2px; outline: none; cursor: pointer; }
+.slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #C8102E; cursor: pointer; transition: transform 0.1s ease; }
+.slider-input::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+/* Erreur & Actions */
+.midi-transpose__erreur { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.3); border-radius: 0.5rem; color: #FF8093; font-size: 0.875rem; font-family: 'Courier New', monospace; width: 100%; max-width: 480px; }
+.midi-transpose__actions { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
+
+/* Boutons de prévisualisation audio */
+.btn-preview { width: 100%; padding: 0.75rem; background: #0a0a0a; color: #22c55e; border: 1px solid #22c55e; border-radius: 0.5rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.15s ease; }
+.btn-preview:hover { background: rgba(34,197,94,0.1); }
+.btn-preview--stop { color: #f59e0b; border-color: #f59e0b; }
+.btn-preview--stop:hover { background: rgba(245,158,11,0.1); }
+
+/* Boutons standards */
+.btn-principal { width: 100%; padding: 1rem; background: #C8102E; color: #fff; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: none; border-radius: 0.5rem; cursor: pointer; font-family: 'Courier New', monospace; transition: background 0.2s ease; }
+.btn-principal:hover:not(:disabled) { background: #e8213f; }
+.btn-principal:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondaire { width: 100%; padding: 0.875rem; background: transparent; color: #a0a0a0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid #2a2a2a; border-radius: 0.5rem; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.15s ease; }
+.btn-secondaire:hover { border-color: #C8102E; color: #C8102E; }

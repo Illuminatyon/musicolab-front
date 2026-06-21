@@ -5,6 +5,12 @@
 
 ---
 
+## Module 2 — Cercle de rythme interactif
+
+Séquenceur rythmique polyrhythmique à 3 pistes. Chaque piste est représentée par un anneau SVG cliquable dont on active les pas. Les 3 anneaux tournent simultanément avec des divisions différentes (8, 12, 16 pas par défaut), ce qui produit des polyrhythmes. Le son est synthétisé en temps réel via la Web Audio API — aucun fichier audio.
+
+---
+
 ## Module 3 — Évaluation de la justesse vocale
 
 Détection de pitch en temps réel via microphone. L'utilisateur choisit des notes cibles, chante, et reçoit un retour immédiat sur sa justesse (trop haut / juste / trop bas). La note est validée automatiquement après 3 secondes de stabilisation dans la zone juste.
@@ -23,7 +29,18 @@ Détection de pitch en temps réel via microphone. L'utilisateur choisit des not
 
 ---
 
-## Fonctionnalités
+## Fonctionnalités — Module 2
+
+- **3 anneaux concentriques** en SVG, chacun cliquable segment par segment pour activer/désactiver un pas
+- **Polyrhythme** — les pistes partagent le même cycle (1 mesure) mais le divisent différemment (4 / 6 / 8 / 12 / 16 pas configurables)
+- **Synthèse audio temps réel** — kick (sinusoïde), tom (triangle), hi-hat (carré) générés via Web Audio API sans fichier audio
+- **Scheduler à lookahead** — battements planifiés 100ms à l'avance sur `audioContext.currentTime` pour un timing précis sans drift
+- **Transport complet** — play / pause propre (`AudioContext.suspend`) / stop / BPM réglable de 40 à 220
+- **Indicateur visuel** — curseur animé à ~60fps sur chaque anneau, synchronisé avec l'horloge audio
+
+---
+
+## Fonctionnalités — Module 3
 
 - **Sélection de session** — nombre de notes (3 / 5 / 7 / 10), octave (2 à 5), notes à l'unité
 - **Écoute de référence** — bouton ▶ pour entendre chaque note avant de la chanter
@@ -74,15 +91,24 @@ npm run preview
 ```
 src/
 ├── models/
-│   ├── noteModel.ts          # Logique musicale : Hz ↔ note, cents, bilan
-│   └── pitchModel.ts         # Pipeline audio : micro, YIN, oscillateur
+│   ├── rhythmModel.ts        # Module 2 : types, fonctions pures, synthèse audio
+│   ├── noteModel.ts          # Module 3 : logique musicale Hz ↔ note, cents, bilan
+│   └── pitchModel.ts         # Module 3 : pipeline audio micro, YIN, oscillateur
 ├── controllers/
-│   ├── usePitchDetection.ts  # Hook : cycle de vie du microphone
-│   └── useNoteSession.ts     # Hook : session N notes, stabilisation 3s
+│   ├── useRhythmCircle.ts    # Module 2 : hook scheduler, animation, transport
+│   ├── usePitchDetection.ts  # Module 3 : hook cycle de vie du microphone
+│   └── useNoteSession.ts     # Module 3 : hook session N notes, stabilisation 3s
 └── views/
-    ├── PitchDetector/        # Composant principal (Smart Component)
-    ├── NoteTarget/           # Note cible + feedback + jauge + anneau SVG
-    └── ResultsSummary/       # Bilan de fin de session
+    ├── RhythmCircle/         # Module 2 : composant principal + anneaux SVG + contrôles
+    │   ├── RhythmCircle.tsx
+    │   ├── RhythmCircle.css
+    │   └── components/
+    │       ├── AnneauPiste.tsx    # Anneau SVG cliquable (Dumb Component)
+    │       ├── ControlesPiste.tsx # Sélecteur de nombre de pas
+    │       └── ControlesBPM.tsx   # Transport + BPM
+    ├── PitchDetector/        # Module 3 : composant principal (Smart Component)
+    ├── NoteTarget/           # Module 3 : note cible + feedback + jauge + anneau SVG
+    └── ResultsSummary/       # Module 3 : bilan de fin de session
 ```
 
 L'architecture suit le patron **MVC** :
@@ -130,7 +156,9 @@ Production : https://musicolab-front.vercel.app
 
 | Nom                                        | Module |
 |--------------------------------------------|---|
+| EstebanPereira-dev                         | Module 2 — Cercle de rythme interactif |
 | Marvin Jean-Fort & Fabio Guerreiro Marques | Module 3 — Évaluation de la justesse vocale |
+| Teddy Ausousseau                           | Module 1 — Importation fichier MIDI |
 
 ---
 

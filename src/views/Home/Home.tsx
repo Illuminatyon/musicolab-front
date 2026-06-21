@@ -19,14 +19,14 @@ const MODULES: ModuleConfig[] = [
         numero: 1,
         titre: "Transposition MIDI",
         description: "Chargez un fichier MIDI, choisissez un intervalle en demi-tons et téléchargez le fichier transposé.",
-        route: null,
+        route: "module/1",
         emoji: "🎹",
     },
     {
         numero: 2,
         titre: "Rhythm Circle",
         description: "Composez des rythmes sur 3 pistes simultanées avec un cercle interactif et un tempo réglable en BPM.",
-        route: null,
+        route: "/module/2",
         emoji: "🥁",
     },
     {
@@ -40,7 +40,7 @@ const MODULES: ModuleConfig[] = [
         numero: 4,
         titre: "Visualisation Audio",
         description: "Chargez un fichier audio et visualisez sa forme d'onde, son spectre fréquentiel et ses métadonnées.",
-        route: null,
+        route: "/module/4",
         emoji: "🎵",
     },
 ];

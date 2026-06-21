@@ -8,6 +8,9 @@ import "./App.css";
 
 import Home         from "./views/Home/Home";
 import PitchDetector from "./views/PitchDetector/pitchDetector";
+import RhythmCircle from "./views/RhythmCircle/RhythmCircle.tsx";
+import AudioVisualizer from "./views/AudioVisualizer/audioVisualizer.tsx";
+import MidiTranspose from "./views/MidiTranspose/midiTranspose.tsx";
 
 export default function App() {
     return (
@@ -15,12 +18,14 @@ export default function App() {
             <Routes>
                 {/* Page d'accueil — sélection des modules */}
                 <Route path="/"          element={<Home />} />
+                {/* Module 2 — Cercle de rythme interactif */}
+                <Route path="/module/2"  element={<RhythmCircle />} />
                 {/* Module 3 — Évaluation de la justesse vocale */}
                 <Route path="/module/3"  element={<PitchDetector />} />
-                {/* Les autres modules seront ajoutés par les autres membres */}
-                {/* <Route path="/module/1" element={<MidiTranspose />} /> */}
-                {/* <Route path="/module/2" element={<RhythmCircle />} /> */}
-                {/* <Route path="/module/4" element={<AudioVisualizer />} /> */}
+
+                {/* Module 4 */}
+                <Route path="/module/4"  element={< AudioVisualizer/>} />
+                <Route path="/module/1" element={<MidiTranspose />} />
             </Routes>
         </BrowserRouter>
     );

@@ -1,0 +1,292 @@
+/* RhythmCircle.css — Charte IUT Montreuil : noir / blanc / rouge #C8102E */
+
+/* ── Racine ── */
+.rhythm-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 100vh;
+    padding: 1.25rem 1rem 2rem;
+    background: #0a0a0a;
+    color: #fff;
+}
+
+/* ── Bouton retour ── */
+.rhythm-circle__retour {
+    align-self: flex-start;
+    padding: 0.375rem 0.875rem;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.375rem;
+    color: #a0a0a0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+.rhythm-circle__retour:hover { border-color: #C8102E; color: #C8102E; }
+
+/* ── En-tête — réutilise .badge / .titre / .sous-titre de pitchDetector.css ── */
+.rhythm-circle__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+/* Classes partagées — même valeurs que pitchDetector.css */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(200, 16, 46, 0.15);
+    color: #C8102E;
+    border: 1px solid rgba(200, 16, 46, 0.3);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Courier New', monospace;
+}
+.titre      { font-size: 2rem; font-weight: 900; color: #fff; font-family: 'Courier New', monospace; }
+.sous-titre { font-size: 0.875rem; color: #a0a0a0; font-family: 'Courier New', monospace; }
+
+/* ── SVG ── */
+.rhythm-circle__svg-wrapper {
+    width: 100%;
+    max-width: 340px;
+}
+.rhythm-circle__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.8));
+}
+
+/* ── Panneau inférieur ── */
+.rhythm-circle__panneau {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 600px;
+    justify-content: center;
+}
+
+/* ── Pistes ── */
+.rhythm-circle__pistes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    flex: 1;
+    min-width: 260px;
+}
+
+/* ── Contrôle d'une piste ── */
+.controles-piste {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+}
+
+.controles-piste__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.controles-piste__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.controles-piste__nom {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex: 1;
+}
+
+.controles-piste__info {
+    font-size: 0.7rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+}
+
+.controles-piste__options {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.controles-piste__btn {
+    flex: 1;
+    padding: 0.3rem 0;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.3rem;
+    color: #a0a0a0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    text-align: center;
+}
+.controles-piste__btn:hover:not(.controles-piste__btn--actif) {
+    border-color: #a0a0a0;
+    color: #fff;
+}
+.controles-piste__btn--actif {
+    font-weight: 900;
+}
+
+/* ── Contrôles BPM ── */
+.controles-bpm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.5rem;
+}
+
+.controles-bpm__tempo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+}
+
+.controles-bpm__nombre {
+    font-size: 2.25rem;
+    font-weight: 900;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    line-height: 1;
+}
+
+.controles-bpm__unite {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.controles-bpm__slider-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Slider stylisé — thème sombre + accent rouge */
+.controles-bpm__slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+.controles-bpm__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #C8102E;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+.controles-bpm__slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.controles-bpm__slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #C8102E;
+    border: none;
+    cursor: pointer;
+}
+.controles-bpm__slider::-moz-range-track {
+    background: #2a2a2a;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.controles-bpm__bornes {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+}
+
+/* Boutons transport */
+.controles-bpm__transport {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.controles-bpm__btn-principal {
+    flex: 1;
+    padding: 0.75rem;
+    background: #C8102E;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.controles-bpm__btn-principal:hover { background: #e8213f; }
+.controles-bpm__btn--pause { background: #f59e0b; }
+.controles-bpm__btn--pause:hover { background: #fbbf24; }
+
+.controles-bpm__btn-stop {
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: #a0a0a0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+.controles-bpm__btn-stop:hover:not(:disabled) { border-color: #C8102E; color: #C8102E; }
+.controles-bpm__btn-stop:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .rhythm-circle { gap: 1.25rem; }
+    .rhythm-circle__svg-wrapper { max-width: 290px; }
+    .titre { font-size: 1.75rem; }
+    .rhythm-circle__panneau { flex-direction: column; }
+    .controles-piste__btn { font-size: 0.7rem; padding: 0.25rem 0; }
+    .controles-bpm__nombre { font-size: 1.75rem; }
+}

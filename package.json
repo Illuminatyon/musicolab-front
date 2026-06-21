@@ -12,10 +12,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@tonejs/midi": "^2.0.28",
     "pitchfinder": "^2.3.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.17.0"
+    "react-router-dom": "^7.17.0",
+    "tone": "^15.1.22"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
