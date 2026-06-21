@@ -76,12 +76,12 @@ function arcPath(rayon: number, angleDebut: number, angleFin: number): string {
 /**
  * Anneau SVG d'une piste du séquenceur.
  *
- * @param props.pas - Tableau des pas (actifs/inactifs)
- * @param props.couleur - Couleur CSS de la piste
- * @param props.rayon - Rayon de l'anneau
- * @param props.pasCourant - Index du pas en lecture (-1 = arrêté)
- * @param props.epaisseur - Épaisseur du trait (défaut : 10)
- * @param props.onBasculerPas - Callback clic
+ * @param pas - Tableau des pas (actifs/inactifs)
+ * @param couleur - Couleur CSS de la piste
+ * @param rayon - Rayon de l'anneau
+ * @param pasCourant - Index du pas en lecture (-1 = arrêté)
+ * @param epaisseur - Épaisseur du trait (défaut : 10)
+ * @param onBasculerPas - Callback clic
  *
  * @example
  * <AnneauPiste
@@ -94,7 +94,7 @@ function arcPath(rayon: number, angleDebut: number, angleFin: number): string {
  */
 export default function AnneauPiste({
     pas, couleur, rayon, pasCourant, epaisseur = 10, onBasculerPas
-}: AnneauPisteProps) {
+}: Readonly<AnneauPisteProps>) {
     const N        = pas.length;
     const anglePas = (2 * Math.PI) / N;
 

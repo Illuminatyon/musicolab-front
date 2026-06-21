@@ -29,15 +29,15 @@ interface ControlesBPMProps {
 /**
  * Barre de transport et contrôle du tempo.
  *
- * @param props.bpm - Tempo courant en BPM
- * @param props.phase - Phase de lecture courante
- * @param props.onDemarrerPause - Lancer / pause / reprendre
- * @param props.onReinitialiser - Stopper
- * @param props.onModifierBPM - Changer le tempo
+ * @param bpm - Tempo courant en BPM
+ * @param phase - Phase de lecture courante
+ * @param onDemarrerPause - Lancer / pause / reprendre
+ * @param onReinitialiser - Stopper
+ * @param onModifierBPM - Changer le tempo
  */
 export default function ControlesBPM({
     bpm, phase, onDemarrerPause, onReinitialiser, onModifierBPM
-}: ControlesBPMProps) {
+}: Readonly<ControlesBPMProps>) {
     const enLecture = phase === "lecture";
     const arrete    = phase === "arret";
 

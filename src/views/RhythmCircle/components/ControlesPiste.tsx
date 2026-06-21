@@ -23,10 +23,10 @@ interface ControlesPisteProps {
 /**
  * Panneau de configuration d'une piste du séquenceur.
  *
- * @param props.piste - Données de la piste
- * @param props.onModifierNombrePas - Callback changement de pas
+ * @param piste - Données de la piste
+ * @param onModifierNombrePas - Callback changement de pas
  */
-export default function ControlesPiste({ piste, onModifierNombrePas }: ControlesPisteProps) {
+export default function ControlesPiste({ piste, onModifierNombrePas }: Readonly<ControlesPisteProps>) {
     return (
         <div className="controles-piste">
             {/* Indicateur couleur + nom */}
