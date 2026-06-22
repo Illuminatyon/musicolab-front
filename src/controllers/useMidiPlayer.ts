@@ -13,7 +13,6 @@
  * Transport audio s'arrête et que la mémoire est libérée si l'utilisateur change de page
  * pendant la lecture.
  */
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
@@ -25,7 +24,9 @@ export function useMidiPlayer() {
 
     const stop = useCallback(() => {
         Tone.Transport.stop();
-        Tone.Transport.cancel();
+        Tone.Transport.cancel(0);
+        Tone.Transport.position = 0;
+
         partsRef.current.forEach(part => part.dispose());
         partsRef.current = [];
         synthsRef.current.forEach(synth => synth.dispose());
@@ -46,7 +47,8 @@ export function useMidiPlayer() {
         try {
             const arrayBuffer = await fichierOuBlob.arrayBuffer();
             const midi = new Midi(arrayBuffer);
-            const now = Tone.now() + 0.5;
+
+            Tone.Transport.position = 0;
 
             midi.tracks.forEach(track => {
                 const synth = new Tone.PolySynth(Tone.Synth, {
@@ -56,17 +58,21 @@ export function useMidiPlayer() {
                 synthsRef.current.push(synth);
 
                 const notes = track.notes.map(n => ({
-                    time: n.time, note: n.name, duration: n.duration, velocity: n.velocity
+                    time: n.time,
+                    note: n.name,
+                    duration: n.duration,
+                    velocity: n.velocity
                 }));
 
                 const part = new Tone.Part((time, value) => {
                     synth.triggerAttackRelease(value.note, value.duration, time, value.velocity);
-                }, notes).start(now);
+                }, notes).start(0);
 
                 partsRef.current.push(part);
             });
 
-            Tone.Transport.start();
+
+            Tone.Transport.start("+0.1");
 
             setTimeout(() => {
                 setIsPlaying(false);
