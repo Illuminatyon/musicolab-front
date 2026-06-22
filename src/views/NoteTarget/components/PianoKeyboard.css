@@ -1,0 +1,147 @@
+/* PianoKeyboard.css — Clavier de piano interactif
+   Charte IUT Montreuil : noir / blanc / rouge #C8102E */
+
+.piano {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.piano__legende {
+    font-size: 0.65rem;
+    color: #4a4a4a;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ── Conteneur du clavier ── */
+.piano__clavier {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 340px;
+    height: 110px;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    padding: 4px 4px 0;
+    gap: 2px;
+}
+
+/* ── Touches communes ── */
+.piano__touche {
+    border: none;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+}
+
+.piano__touche:active {
+    transform: scaleY(0.97);
+    transform-origin: top;
+}
+
+/* ── Touches blanches ── */
+.piano__blanche {
+    flex: 1;
+    height: 100%;
+    background: #f0f0f0;
+    border-radius: 0 0 4px 4px;
+    border: 1px solid #c0c0c0;
+    z-index: 1;
+}
+
+.piano__blanche:hover {
+    background: #e0e0e0;
+}
+
+/* ── Touches noires ── */
+.piano__noire {
+    position: absolute;
+    top: 4px;
+    width: 8%;
+    height: 62%;
+    background: #1a1a1a;
+    border-radius: 0 0 3px 3px;
+    border: 1px solid #000;
+    z-index: 2;
+}
+
+.piano__noire:hover {
+    background: #2a2a2a;
+}
+
+/* Positions des 5 touches noires (calculées sur 7 touches blanches)
+   Chaque touche blanche = 100/7 ≈ 14.28% de la largeur totale
+   Touches noires centrées entre leurs blanches adjacentes */
+.piano__noire--pos-0 { left: 10%;   } /* Do#  — entre Do  et Ré  */
+.piano__noire--pos-1 { left: 24%;   } /* Ré#  — entre Ré  et Mi  */
+.piano__noire--pos-2 { left: 52.5%; } /* Fa#  — entre Fa  et Sol */
+.piano__noire--pos-3 { left: 66.5%; } /* Sol# — entre Sol et La  */
+.piano__noire--pos-4 { left: 80.5%; } /* La#  — entre La  et Si  */
+
+/* ── Note cible — surlignage rouge ── */
+.piano__blanche.piano__touche--cible {
+    background: rgba(200, 16, 46, 0.85);
+    border-color: #C8102E;
+    box-shadow: 0 0 12px rgba(200, 16, 46, 0.4);
+    animation: piano-pulse 1.5s ease-in-out infinite;
+}
+
+.piano__noire.piano__touche--cible {
+    background: #C8102E;
+    border-color: #C8102E;
+    box-shadow: 0 0 12px rgba(200, 16, 46, 0.6);
+    animation: piano-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes piano-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.75; }
+}
+
+/* ── Labels des notes ── */
+.piano__nom {
+    font-size: 0.55rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: #555;
+    text-transform: none;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.piano__blanche.piano__touche--cible .piano__nom {
+    color: #fff;
+}
+
+.piano__nom--noire {
+    display: none; /* Labels masqués sur touches noires (trop petit) */
+}
+
+/* ── Résumé de la note active ── */
+.piano__note-active {
+    font-size: 0.72rem;
+    color: #a0a0a0;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+.piano__note-active strong {
+    color: #C8102E;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .piano__clavier {
+        height: 90px;
+        max-width: 280px;
+    }
+}

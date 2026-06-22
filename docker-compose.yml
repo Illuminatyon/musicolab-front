@@ -1,0 +1,14 @@
+services:
+  back:
+    image: mq2vin/musicolab-back:main
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  front:
+    image: mq2vin/musicolab-front:main
+    ports:
+      - "8080:80"
+    depends_on:
+      - back
+    restart: unless-stopped
