@@ -43,6 +43,15 @@ export default function MidiTranspose() {
         }
     };
 
+    const handleReinitialiser = () => {
+        playerOriginal.stop();
+        playerTranspose.stop();
+        reinitialiser();
+        if (inputFichierRef.current) {
+            inputFichierRef.current.value = "";
+        }
+    };
+
     return (
         <div className="midi-transpose">
             <BoutonRetour />
@@ -141,8 +150,11 @@ export default function MidiTranspose() {
                                 </button>
                             </>
                         )}
-
-                        <button className="btn-secondaire" style={{ borderColor: '#2a2a2a', marginTop: '1rem' }} onClick={reinitialiser}>
+                        <button
+                            className="btn-secondaire"
+                            style={{ borderColor: '#2a2a2a', marginTop: '1rem' }}
+                            onClick={handleReinitialiser}
+                        >
                             ↺ Réinitialiser
                         </button>
                     </div>
