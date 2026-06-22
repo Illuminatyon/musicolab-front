@@ -62,7 +62,7 @@ MusicoLab est une **application React multi-modules** dédiée à l'apprentissag
 
 ## 🎹 Module 1 — Transposition MIDI
 
-> Développé par **Teddy ASOUSSEAU**
+> Développé par **Parchemal NGUIMGO**
 
 Importez un fichier MIDI, choisissez un intervalle de transposition en demi-tons et téléchargez immédiatement le fichier transposé.
 
@@ -166,7 +166,7 @@ views/NoteTarget/
 
 ## 🎵 Module 4 — Analyse fréquentielle
 
-> Développé par **Parchemal NGUINGO**
+> Développé par **Teddy AUSOUSSEAU**
 
 Importez un fichier audio et visualisez son contenu fréquentiel. Le module génère une **analyse spectrale complète** via FFT permettant d'identifier les composantes fréquentielles dominantes de la piste.
 
