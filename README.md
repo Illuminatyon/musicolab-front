@@ -394,11 +394,11 @@ musicolab-front/
 
 | Contributeur | Module |
 |---|---|
-| 🎹 **Teddy ASOUSSEAU** | Module 1 — Transposition MIDI |
+| 🎹 **Parchemal NGUINGO** | Module 1 — Transposition MIDI |
 | 🥁 **Esteban PEREIRA** | Module 2 — Cercle de rythme interactif |
 | 🎤 **Fabio GUERREIRO MARQUES** | Module 3 — Évaluation de la justesse vocale |
 | 🎤 **Marvin JEAN-FORT** | Module 3 — Évaluation de la justesse vocale |
-| 🎵 **Parchemal NGUINGO** | Module 4 — Analyse fréquentielle |
+| 🎵 **Teddy AUSOUSSEAU** | Module 4 — Analyse fréquentielle |
 
 </div>
 
